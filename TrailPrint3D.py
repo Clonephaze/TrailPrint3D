@@ -1,79 +1,79 @@
 """
-TrailPrint3D - Blender插件：将GPS轨迹文件转换为3D打印地形模型
+TrailPrint3D - Blender Plugin: Convert GPS Track Files to 3D Printable Terrain Models
 
-=== 插件功能 ===
-本插件可以将GPX或IGC格式的GPS轨迹文件转换成可3D打印的地形模型，
-支持添加路径、文字标注、水体、森林等地理要素。
+=== Plugin Features ===
+This plugin converts GPX or IGC format GPS track files into 3D printable terrain models,
+supporting paths, text labels, water bodies, forests and other geographic features.
 
-=== 主要特性 ===
-1. 支持GPX和IGC文件格式
-2. 自动获取真实海拔数据
-3. 单色/多色打印模式
-4. 可自定义地图大小和形状
-5. 支持批量处理多个轨迹文件
-6. 内置中文字体支持
+=== Main Features ===
+1. Support for GPX and IGC file formats
+2. Automatic real elevation data retrieval
+3. Single/multi-color printing modes
+4. Customizable map size and shape
+5. Batch processing of multiple track files
+6. Built-in font support
 
-=== 数据来源 ===
-- 海拔数据: OpenTopoData (SRTM等数据集), Open-Elevation (NASA SRTM)
-- 地形数据: Mapzen Terrain Tiles (AWS Public Dataset)
-- 地图数据: © OpenStreetMap contributors
-- 水体/森林/城市数据: © OpenStreetMap contributors
+=== Data Sources ===
+- Elevation data: OpenTopoData (SRTM datasets), Open-Elevation (NASA SRTM)
+- Terrain data: Mapzen Terrain Tiles (AWS Public Dataset)
+- Map data: © OpenStreetMap contributors
+- Water/Forest/City data: © OpenStreetMap contributors
 
-=== 代码结构概览 ===
-1. 导入和全局设置 (第1-150行)
-   - 导入必要的Python和Blender模块
-   - 定义全局变量和默认值
-   
-2. 属性定义 (第150-400行)
-   - 定义所有UI参数和设置选项
-   - 包括地图大小、分辨率、海拔缩放等
-   
-3. UI操作符 (第400-1100行)
-   - 生成、导出、后期处理等操作
-   - 缩放、挤出、磁铁孔等工具
-   
-4. UI面板 (第1100-1500行)
-   - 主面板：生成设置
-   - 高级面板：详细参数调整
-   - 形状面板：文字和底座设置
-   
-5. 核心工具函数
-   - API和缓存管理 (第1500-1900行)
-     * 海拔数据API调用
-     * 缓存系统提高性能
-     
-   - 颜色和材质 (第1900-2200行)
-     * 预设材质颜色
-     * 地形着色系统
-     
-   - 坐标转换 (第2200-2450行)
-     * GPS坐标转Blender坐标
-     * 缩放和投影计算
-     
-   - 海拔数据获取 (第2450-2900行)
+=== Code Structure Overview ===
+1. Imports and Global Settings (Lines 1-150)
+   - Import necessary Python and Blender modules
+   - Define global variables and defaults
+
+2. Property Definitions (Lines 150-400)
+   - Define all UI parameters and settings
+   - Including map size, resolution, elevation scale, etc.
+
+3. UI Operators (Lines 400-1100)
+   - Generate, export, post-processing operations
+   - Scale, extrude, magnet holes tools
+
+4. UI Panels (Lines 1100-1500)
+   - Main panel: Generation settings
+   - Advanced panel: Detailed parameter adjustment
+   - Shape panel: Text and base settings
+
+5. Core Utility Functions
+   - API and Cache Management (Lines 1500-1900)
+     * Elevation data API calls
+     * Caching system for performance
+
+   - Colors and Materials (Lines 1900-2200)
+     * Preset material colors
+     * Terrain coloring system
+
+   - Coordinate Conversion (Lines 2200-2450)
+     * GPS to Blender coordinates
+     * Scale and projection calculations
+
+   - Elevation Data Retrieval (Lines 2450-2900)
      * OpenTopoData API
      * Open-Elevation API
      * Terrain-Tiles API
-     
-   - 网格处理 (第2900-3100行)
-     * 网格细分和优化
-     * 异常点修复
-     
-   - 形状生成 (第3100-3700行)
-     * 六边形、八边形底座
-     * 文字标注生成
-     
-   - 单色模式 (第3980-4100行)
-     * 路径嵌入地图
-     * 适合单色3D打印机
-     
-   - OpenStreetMap (第4100-4700行)
-     * 水体、森林、城市数据
-     * 自动着色
-     
-6. 主生成函数 (第5000-6000行)
-   - runGeneration(): 核心生成流程
-   - 整合所有功能模块
+
+   - Mesh Processing (Lines 2900-3100)
+     * Mesh subdivision and optimization
+     * Anomaly point repair
+
+   - Shape Generation (Lines 3100-3700)
+     * Hexagon, octagon bases
+     * Text label generation
+
+   - Single Color Mode (Lines 3980-4100)
+     * Path embedded in map
+     * Suitable for single-color 3D printers
+
+   - OpenStreetMap (Lines 4100-4700)
+     * Water, forest, city data
+     * Automatic coloring
+
+6. Main Generation Function (Lines 5000-6000)
+   - runGeneration(): Core generation flow
+   - Integrates all functional modules
 """
 
 
@@ -82,15 +82,15 @@ bl_info = {
     "blender": (4, 5, 2),
     "category": "Object",
     "version": (2, 23),
-    "description": "创建GPS轨迹的3D打印地形模型",
+    "description": "Create 3D printable terrain models from GPS tracks",
     "warning": "",
     "doc_url": "",
     "tracker_url": "",
     "support": "COMMUNITY"
 }
 
-# 插件分类标识
-# 设置为完整版本，开放所有功能（移除Patreon限制）
+# Plugin category identifier
+# Set to full version, all features unlocked (Patreon restrictions removed)
 category = "TrailPrint3D+"
 
 
@@ -218,37 +218,37 @@ def dynamic_specialCollection_items(self, context):
 # Define a Property Group to store variables
 class MyProperties(bpy.types.PropertyGroup):
     file_path: bpy.props.StringProperty(
-        name="文件路径",
-        description="选择一个文件",
+        name="File Path",
+        description="Select a file",
         default="",
         maxlen=1024,
         subtype='FILE_PATH'  # Enables file selection
     )# type: ignore
     export_path: bpy.props.StringProperty(
-        name="导出路径",
-        description="保存 STL 文件的位置",
+        name="Export Path",
+        description="Location to save STL files",
         default="",
         maxlen=1024,
         subtype='DIR_PATH'  # Enables folder selection
     )# type: ignore
     chain_path: bpy.props.StringProperty(
-        name="文件夹路径",
-        description="选择包含多个 GPX 文件的文件夹",
+        name="Folder Path",
+        description="Select folder containing multiple GPX files",
         default="",
         maxlen=1024,
         subtype='DIR_PATH'  # Enables folder selection
     )# type: ignore
-    trailName: bpy.props.StringProperty(name="名称", default="", description="留空则使用文件名") # type: ignore
+    trailName: bpy.props.StringProperty(name="Name", default="", description="Leave empty to use filename") # type: ignore
     
     shape: bpy.props.EnumProperty(
-        name = "形状",
+        name = "Shape",
         items=[
-            ("HEXAGON", "六边形", "六边形地图"),
-            ("SQUARE", "正方形", "正方形地图"),
-            ("CIRCLE", "圆形", "圆形地图"),
-            ("HEXAGON INNER TEXT", "六边形内文字", "带内嵌文字的六边形地图"),
-            ("HEXAGON OUTER TEXT", "六边形外文字", "带背板和文字的六边形地图"),
-            ("HEXAGON FRONT TEXT", "六边形正面文字", "带背板和正面文字的六边形地图")
+            ("HEXAGON", "Hexagon", "Hexagon map"),
+            ("SQUARE", "Square", "Square map"),
+            ("CIRCLE", "Circle", "Circle map"),
+            ("HEXAGON INNER TEXT", "Hexagon Inner Text", "Hexagon map with inner text"),
+            ("HEXAGON OUTER TEXT", "Hexagon Outer Text", "Hexagon map with backplate and text"),
+            ("HEXAGON FRONT TEXT", "Hexagon Front Text", "Hexagon map with backplate and front text")
         ],
         default = "HEXAGON OUTER TEXT",
         update = shape_callback #calls shape_callback when user selects diffrent shape to register the Shape Panel
@@ -286,104 +286,104 @@ class MyProperties(bpy.types.PropertyGroup):
         ],
         default='FACTOR'
     )# type: ignore
-    pathScale: bpy.props.FloatProperty(name = "路径缩放", default = 0.8, min = 0.01, max = 200, description = "路径相对于地图大小/全局缩放的比例（取决于缩放模式）")
-    scaleLon1: bpy.props.FloatProperty(name = "经度1", default = 0, description = "第一个坐标的经度")
-    scaleLat1: bpy.props.FloatProperty(name = "纬度1", default = 0, description = "第一个坐标的纬度")
-    scaleLon2: bpy.props.FloatProperty(name = "经度2", default = 0, description = "第二个坐标的经度")
-    scaleLat2: bpy.props.FloatProperty(name = "纬度2", default = 0, description = "第二个坐标的纬度")
+    pathScale: bpy.props.FloatProperty(name = "Path Scale", default = 0.8, min = 0.01, max = 200, description = "Path scale relative to map size/global scale (depends on scale mode)")
+    scaleLon1: bpy.props.FloatProperty(name = "Longitude 1", default = 0, description = "Longitude of first coordinate")
+    scaleLat1: bpy.props.FloatProperty(name = "Latitude 1", default = 0, description = "Latitude of first coordinate")
+    scaleLon2: bpy.props.FloatProperty(name = "Longitude 2", default = 0, description = "Longitude of second coordinate")
+    scaleLat2: bpy.props.FloatProperty(name = "Latitude 2", default = 0, description = "Latitude of second coordinate")
 
-    selfHosted: bpy.props.StringProperty(name="自托管API地址", default="", description="必须使用与Opentopodata.org相同的API格式 (https://api.opentopodata.org/v1/)")
+    selfHosted: bpy.props.StringProperty(name="Self-hosted API URL", default="", description="Must use same API format as Opentopodata.org (https://api.opentopodata.org/v1/)")
 
-    objSize: bpy.props.IntProperty(name="地图大小", default = 100, min = 5, max = 10000,description = "地图的尺寸，单位为毫米")
-    num_subdivisions: bpy.props.IntProperty(name = "分辨率", default = 8, min = 1, max = 10, description = "(最大推荐值为8) 数值越高地形越详细，但生成速度越慢")
-    scaleElevation: bpy.props.FloatProperty(name = "海拔缩放", default = 2, min = 0, max = 10000, description = "海拔的乘数")
-    pathThickness: bpy.props.FloatProperty(name = "路径粗细", default = 1.2, min = 0.1, max = 5, description = "路径的粗细，单位为毫米")
-    shapeRotation: bpy.props.IntProperty(name = "形状旋转", default = 0, min = -360, max = 360, description = "形状的旋转角度") 
-    overwritePathElevation: bpy.props.BoolProperty(name="覆盖路径海拔", default=True, description = "将路径的每个点投射到地形网格上")
-    o_verticesPath: bpy.props.StringProperty(name="路径顶点数", default="")
-    o_verticesMap: bpy.props.StringProperty(name="地图顶点数", default="")
-    o_mapScale: bpy.props.StringProperty(name="地图比例", default = "")
-    o_time: bpy.props.StringProperty(name="生成时间",default="")
-    o_apiCounter_OpenTopoData: bpy.props.StringProperty(name="OpenTopoData计数", default = "API限制: ---/1000 每天")
-    o_apiCounter_OpenElevation: bpy.props.StringProperty(name="OpenElevation计数", default = "API限制: ---/1000 每月")
-    o_centerx: bpy.props.FloatProperty(name = "中心点X", default = 0, description = "路径的X轴中心坐标")
-    o_centery: bpy.props.FloatProperty(name = "中心点Y", default = 0, description = "路径的Y轴中心坐标")
+    objSize: bpy.props.IntProperty(name="Map Size", default = 100, min = 5, max = 10000,description = "Size of the map in millimeters")
+    num_subdivisions: bpy.props.IntProperty(name = "Resolution", default = 8, min = 1, max = 10, description = "(Max recommended: 8) Higher values create more detailed terrain but slower generation")
+    scaleElevation: bpy.props.FloatProperty(name = "Elevation Scale", default = 2, min = 0, max = 10000, description = "Multiplier for elevation")
+    pathThickness: bpy.props.FloatProperty(name = "Path Thickness", default = 1.2, min = 0.1, max = 5, description = "Thickness of the path in millimeters")
+    shapeRotation: bpy.props.IntProperty(name = "Shape Rotation", default = 0, min = -360, max = 360, description = "Rotation angle of the shape") 
+    overwritePathElevation: bpy.props.BoolProperty(name="Overwrite Path Elevation", default=True, description = "Project each point of the path onto the terrain mesh")
+    o_verticesPath: bpy.props.StringProperty(name="Path Vertices", default="")
+    o_verticesMap: bpy.props.StringProperty(name="Map Vertices", default="")
+    o_mapScale: bpy.props.StringProperty(name="Map Scale", default = "")
+    o_time: bpy.props.StringProperty(name="Generation Time",default="")
+    o_apiCounter_OpenTopoData: bpy.props.StringProperty(name="OpenTopoData Count", default = "API Limit: ---/1000 per day")
+    o_apiCounter_OpenElevation: bpy.props.StringProperty(name="OpenElevation Count", default = "API Limit: ---/1000 per month")
+    o_centerx: bpy.props.FloatProperty(name = "Center X", default = 0, description = "X-axis center coordinate of the path")
+    o_centery: bpy.props.FloatProperty(name = "Center Y", default = 0, description = "Y-axis center coordinate of the path")
 
-    magnetHeight: bpy.props.FloatProperty(name = "磁铁高度", default = 2.5, description = "磁铁孔的高度，单位为毫米")
-    magnetDiameter: bpy.props.FloatProperty(name = "磁铁直径", default = 6.3, description = "磁铁孔的直径，单位为毫米")
+    magnetHeight: bpy.props.FloatProperty(name = "Magnet Height", default = 2.5, description = "Height of the magnet hole in millimeters")
+    magnetDiameter: bpy.props.FloatProperty(name = "Magnet Diameter", default = 6.3, description = "Diameter of the magnet hole in millimeters")
 
     textFont: bpy.props.StringProperty(
-        name="字体文件",
-        description="选择字体文件（留空则自动下载中文字体）",
+        name="Font File",
+        description="Select a font file (leave empty to auto-detect system font)",
         default="",
         maxlen=1024,
         subtype='FILE_PATH'  # Enables file selection
     )# type: ignore
-    textSize: bpy.props.IntProperty(name="文字大小", default = 5, min = 0, max = 1000, description="文字的大小，单位为毫米")
-    textSizeTitle: bpy.props.IntProperty(name="标题文字大小", default = 0, min = 0, max = 1000, description = "设为0则使用'文字大小'的值")
-    overwriteLength: bpy.props.StringProperty(name="自定义距离文字", default = "", description="覆盖默认的距离显示")
-    overwriteHeight: bpy.props.StringProperty(name="自定义海拔文字", default = "", description="覆盖默认的海拔显示")
-    overwriteTime: bpy.props.StringProperty(name="自定义时间文字", default = "", description="覆盖默认的时间显示")
-    outerBorderSize: bpy.props.IntProperty(name="边框大小(%)", default = 20, min = 0, max = 1000, description="仅用于带底板的形状")
-    text_angle_preset: bpy.props.IntProperty(name="文字角度", description="在形状上旋转文字的角度", default=0, min = 0, max = 260)
-    plateThickness: bpy.props.FloatProperty(name="底板厚度", default = 5, description="额外底板的厚度")
-    plateInsertValue: bpy.props.FloatProperty(name="底板插入深度", default = 2, description="地图在底板中的切口深度，0表示忽略")
+    textSize: bpy.props.IntProperty(name="Text Size", default = 5, min = 0, max = 1000, description="Size of the text in millimeters")
+    textSizeTitle: bpy.props.IntProperty(name="Title Text Size", default = 0, min = 0, max = 1000, description = "Set to 0 to use 'Text Size' value")
+    overwriteLength: bpy.props.StringProperty(name="Custom Distance Text", default = "", description="Override default distance display")
+    overwriteHeight: bpy.props.StringProperty(name="Custom Elevation Text", default = "", description="Override default elevation display")
+    overwriteTime: bpy.props.StringProperty(name="Custom Time Text", default = "", description="Override default time display")
+    outerBorderSize: bpy.props.IntProperty(name="Border Size (%)", default = 20, min = 0, max = 1000, description="Only for shapes with backplate")
+    text_angle_preset: bpy.props.IntProperty(name="Text Angle", description="Angle to rotate text on the shape", default=0, min = 0, max = 260)
+    plateThickness: bpy.props.FloatProperty(name="Plate Thickness", default = 5, description="Thickness of the additional backplate")
+    plateInsertValue: bpy.props.FloatProperty(name="Plate Insert Depth", default = 2, description="Depth of map cutout in the plate, 0 to ignore")
 
-    tileSpacing: bpy.props.FloatProperty(name="瓦片间距", default = 0, description="扩展时瓦片之间的距离")
+    tileSpacing: bpy.props.FloatProperty(name="Tile Spacing", default = 0, description="Distance between tiles when extending")
 
 
 
-    minThickness: bpy.props.IntProperty(name="最小厚度", default = 7, min = 0, max = 1000, description="在地图最低点增加的厚度，确保打印强度")
-    xTerrainOffset: bpy.props.FloatProperty(name="X轴地形偏移", default = 0, description="使地图在X方向上相对于路径产生偏移")
-    yTerrainOffset: bpy.props.FloatProperty(name="Y轴地形偏移", default = 0, description="使地图在Y方向上相对于路径产生偏移")
+    minThickness: bpy.props.IntProperty(name="Minimum Thickness", default = 7, min = 0, max = 1000, description="Thickness added at lowest point for print strength")
+    xTerrainOffset: bpy.props.FloatProperty(name="X Terrain Offset", default = 0, description="Offset map relative to path in X direction")
+    yTerrainOffset: bpy.props.FloatProperty(name="Y Terrain Offset", default = 0, description="Offset map relative to path in Y direction")
 
-    rescaleMultiplier: bpy.props.FloatProperty(name = "缩放倍数", default = 1, min = 0, max = 10000, description="海拔重新缩放的倍数")
-    thickenValue: bpy.props.FloatProperty(name="加厚值", default = 1, description = "使地图增加指定厚度，单位为毫米")
-    fixedElevationScale: bpy.props.BoolProperty(name="固定海拔高度", default=False, description = "强制海拔高度为10mm（从最高点到最低点），海拔缩放系数仍然生效")
-    singleColorMode: bpy.props.BoolProperty(name="单色模式", default = True, description = "适合单色3D打印机，合并所有部分为单一对象")
-    tolerance: bpy.props.FloatProperty(name="路径容差", default = 0.2, description="单色模式下路径与地形的融合容差值")
-    disableCache: bpy.props.BoolProperty(name="禁用缓存", default = False, description = "如果网格出现孔洞或异常，禁用缓存可能有帮助")
-    ccacheSize: bpy.props.IntProperty(name = "缓存大小", default = 50000, min = 0, description="海拔数据缓存的最大条目数")
+    rescaleMultiplier: bpy.props.FloatProperty(name = "Scale Multiplier", default = 1, min = 0, max = 10000, description="Multiplier for elevation rescaling")
+    thickenValue: bpy.props.FloatProperty(name="Thicken Value", default = 1, description = "Add specified thickness to map in millimeters")
+    fixedElevationScale: bpy.props.BoolProperty(name="Fixed Elevation Height", default=False, description = "Force elevation to 10mm (highest to lowest), scale factor still applies")
+    singleColorMode: bpy.props.BoolProperty(name="Single Color Mode", default = True, description = "For single-color 3D printers, merge all parts into one object")
+    tolerance: bpy.props.FloatProperty(name="Path Tolerance", default = 0.2, description="Tolerance for path-terrain blending in single color mode")
+    disableCache: bpy.props.BoolProperty(name="Disable Cache", default = False, description = "Disabling cache may help if mesh has holes or anomalies")
+    ccacheSize: bpy.props.IntProperty(name = "Cache Size", default = 50000, min = 0, description="Maximum entries in elevation data cache")
     
-    # 旗帜标记选项
-    addFlags: bpy.props.BoolProperty(name="添加旗帜标记", default = False, description="在最低点和最高点添加起点/终点旗帜，用于标记地形极值点")
-    flagHeight: bpy.props.FloatProperty(name="旗帜高度", default = 5.0, min = 1.0, max = 30.0, description="旗杆高度，单位毫米")
-    flagWidth: bpy.props.FloatProperty(name="旗面宽度", default = 3.0, min = 0.5, max = 10.0, description="旗面宽度，单位毫米")
+    # Flag marker options
+    addFlags: bpy.props.BoolProperty(name="Add Flag Markers", default = False, description="Add start/finish flags at lowest/highest points to mark terrain extremes")
+    flagHeight: bpy.props.FloatProperty(name="Flag Height", default = 5.0, min = 1.0, max = 30.0, description="Flag pole height in millimeters")
+    flagWidth: bpy.props.FloatProperty(name="Flag Width", default = 3.0, min = 0.5, max = 10.0, description="Flag banner width in millimeters")
 
 
-    sAdditionalExtrusion: bpy.props.FloatProperty(name="附加拉伸值",default = 0, description="内部使用的拉伸值")
-    sAutoScale: bpy.props.FloatProperty(name="自动缩放",default = 1, description="自动计算的缩放系数")
-    sScaleHor: bpy.props.FloatProperty(name="水平缩放",default = 1, description = "地图的水平缩放系数")
-    sElevationOffset: bpy.props.FloatProperty(name="海拔偏移", default = 0, description="海拔的基准偏移值")
-    sMapInKm: bpy.props.FloatProperty(name = "地图长度(公里)", default = 0, description = "地图尺寸对应的实际公里数")
+    sAdditionalExtrusion: bpy.props.FloatProperty(name="Additional Extrusion",default = 0, description="Extrusion value for internal use")
+    sAutoScale: bpy.props.FloatProperty(name="Auto Scale",default = 1, description="Automatically calculated scale factor")
+    sScaleHor: bpy.props.FloatProperty(name="Horizontal Scale",default = 1, description = "Horizontal scale factor for map")
+    sElevationOffset: bpy.props.FloatProperty(name="Elevation Offset", default = 0, description="Base offset value for elevation")
+    sMapInKm: bpy.props.FloatProperty(name = "Map Length (km)", default = 0, description = "Actual kilometers corresponding to map size")
 
-    col_wActive: bpy.props.BoolProperty(name="包含水体", default=False, description = "包含水体（湖泊、池塘）（实验性功能），海洋暂不支持")
-    col_wArea: bpy.props.FloatProperty(name="水体大小阈值", default = 1, description = "小于此阈值的湖泊将被忽略")
-    col_fActive: bpy.props.BoolProperty(name="包含森林", default=False, description = "包含森林区域（实验性功能）")
-    col_fArea: bpy.props.FloatProperty(name="森林大小阈值", default = 10, description = "小于此阈值的森林将被忽略")
-    col_cActive: bpy.props.BoolProperty(name="包含城市边界", default=False, description = "包含城市边界（实验性功能）")
-    col_cArea: bpy.props.FloatProperty(name="城市大小阈值", default = 1, description = "小于此阈值的城市将被忽略")
-    col_KeepManifold: bpy.props.BoolProperty(name="保留非流形对象", default=False, description = "保留破损的/非流形的水体部分")
-    col_PaintMap: bpy.props.BoolProperty(name="绘制地图", default=True, description = "在地图上绘制而不是生成单独的对象（推荐MAC用户使用）")
+    col_wActive: bpy.props.BoolProperty(name="Include Water", default=False, description = "Include water bodies (lakes, ponds) (experimental), oceans not supported")
+    col_wArea: bpy.props.FloatProperty(name="Water Size Threshold", default = 1, description = "Lakes smaller than this threshold will be ignored")
+    col_fActive: bpy.props.BoolProperty(name="Include Forest", default=False, description = "Include forest areas (experimental)")
+    col_fArea: bpy.props.FloatProperty(name="Forest Size Threshold", default = 10, description = "Forests smaller than this threshold will be ignored")
+    col_cActive: bpy.props.BoolProperty(name="Include City Boundaries", default=False, description = "Include city boundaries (experimental)")
+    col_cArea: bpy.props.FloatProperty(name="City Size Threshold", default = 1, description = "Cities smaller than this threshold will be ignored")
+    col_KeepManifold: bpy.props.BoolProperty(name="Keep Non-manifold", default=False, description = "Keep broken/non-manifold water body parts")
+    col_PaintMap: bpy.props.BoolProperty(name="Paint Map", default=True, description = "Paint on map instead of generating separate objects (recommended for Mac)")
 
-    mountain_treshold:bpy.props.IntProperty(name="山地阈值", default = 60, min = 0, max = 100,subtype='PERCENTAGE', description="高于此百分比高度的区域将着色为山地")
-    cl_thickness: bpy.props.FloatProperty(name="等高线粗细", default = 0.2, description = "等高线的粗细，单位为毫米")
-    cl_distance: bpy.props.FloatProperty(name="等高线间距", default = 2, description = "等高线之间的距离")
-    cl_offset: bpy.props.FloatProperty(name="等高线偏移", default = 0.0, description = "等高线的起始偏移量")
+    mountain_treshold:bpy.props.IntProperty(name="Mountain Threshold", default = 60, min = 0, max = 100,subtype='PERCENTAGE', description="Areas above this percentage height will be colored as mountain")
+    cl_thickness: bpy.props.FloatProperty(name="Contour Thickness", default = 0.2, description = "Contour line thickness in millimeters")
+    cl_distance: bpy.props.FloatProperty(name="Contour Spacing", default = 2, description = "Distance between contour lines")
+    cl_offset: bpy.props.FloatProperty(name="Contour Offset", default = 0.0, description = "Starting offset for contour lines")
 
-    show_stats: bpy.props.BoolProperty(name="附加信息", default=False)
-    show_coloring: bpy.props.BoolProperty(name="包含元素", default=False)
-    show_chain: bpy.props.BoolProperty(name="批量生成", default=False)
-    show_map: bpy.props.BoolProperty(name="地图设置",default=False)
-    show_pin: bpy.props.BoolProperty(name="图钉标记",default=False)
-    show_special: bpy.props.BoolProperty(name="特殊功能",default=False)
-    show_postProcess: bpy.props.BoolProperty(name="后期处理", default = False)
-    show_api: bpy.props.BoolProperty(name="API设置", default=False)
-    show_attribution: bpy.props.BoolProperty(name="数据来源", default = False)
+    show_stats: bpy.props.BoolProperty(name="Additional Info", default=False)
+    show_coloring: bpy.props.BoolProperty(name="Include Elements", default=False)
+    show_chain: bpy.props.BoolProperty(name="Batch Generation", default=False)
+    show_map: bpy.props.BoolProperty(name="Map Settings",default=False)
+    show_pin: bpy.props.BoolProperty(name="Pin Markers",default=False)
+    show_special: bpy.props.BoolProperty(name="Special Features",default=False)
+    show_postProcess: bpy.props.BoolProperty(name="Post Processing", default = False)
+    show_api: bpy.props.BoolProperty(name="API Settings", default=False)
+    show_attribution: bpy.props.BoolProperty(name="Data Attribution", default = False)
 
-    cityname: bpy.props.StringProperty(name="城市名称", default="Berlin", description = "获取城市的坐标")
-    pinLat: bpy.props.FloatProperty(name="纬度", default = 48.00, description="图钉标记的纬度")
-    pinLon: bpy.props.FloatProperty(name="经度", default = 8.00, description="图钉标记的经度")
+    cityname: bpy.props.StringProperty(name="City Name", default="Berlin", description = "Get coordinates for city")
+    pinLat: bpy.props.FloatProperty(name="Latitude", default = 48.00, description="Latitude for pin marker")
+    pinLon: bpy.props.FloatProperty(name="Longitude", default = 8.00, description="Longitude for pin marker")
 
     mapmode: bpy.props.EnumProperty(
         name="mapmode",
@@ -395,9 +395,9 @@ class MyProperties(bpy.types.PropertyGroup):
         default='FROMPLANE'
     )# type: ignore
 
-    jMapLat: bpy.props.FloatProperty(name="纬度", default = 49.00)
-    jMapLon: bpy.props.FloatProperty(name="经度", default = 9.00)
-    jMapRadius: bpy.props.FloatProperty(name="半径(公里)", default = 200)
+    jMapLat: bpy.props.FloatProperty(name="Latitude", default = 49.00)
+    jMapLon: bpy.props.FloatProperty(name="Longitude", default = 9.00)
+    jMapRadius: bpy.props.FloatProperty(name="Radius (km)", default = 200)
 
     jMapLat1: bpy.props.FloatProperty(name="Latitude1", default = 48.00)
     jMapLat2: bpy.props.FloatProperty(name="Latitude2", default = 49.00)
@@ -405,8 +405,8 @@ class MyProperties(bpy.types.PropertyGroup):
     jMapLon2: bpy.props.FloatProperty(name="Longitude2", default = 9.00)
 
     specialBlend_path: bpy.props.StringProperty(
-        name="特殊模板路径",
-        description="选择特殊模板.blend文件（TP3dSpecial.blend）",
+        name="Special Template Path",
+        description="Select special template .blend file (TP3dSpecial.blend)",
         default="",
         maxlen=1024,
         subtype='FILE_PATH'
@@ -414,8 +414,8 @@ class MyProperties(bpy.types.PropertyGroup):
 
     # Custom property to store selection
     specialCollectionName: bpy.props.EnumProperty(
-        name="特殊集合",
-        description="从外部.blend文件中选择一个集合",
+        name="Special Collection",
+        description="Select a collection from external .blend file",
         items=dynamic_specialCollection_items
     )# type: ignore
 
@@ -424,8 +424,8 @@ class MyProperties(bpy.types.PropertyGroup):
 # Define the operator (script execution)
 class MY_OT_runGeneration(bpy.types.Operator):
     bl_idname = "wm.run_my_script"
-    bl_label = "生成"
-    bl_description = "使用当前设置生成路径和地图"
+    bl_label = "Generate"
+    bl_description = "Generate path and map with current settings"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -438,8 +438,8 @@ class MY_OT_runGeneration(bpy.types.Operator):
 
 class MY_OT_ExportSTL(bpy.types.Operator):
     bl_idname = "wm.run_my_script5"
-    bl_label = "导出 STL/OBJ"
-    bl_description = "将选定对象导出为单独的STL文件（如果对象包含材质则导出为OBJ）"
+    bl_label = "Export STL/OBJ"
+    bl_description = "Export selected objects as separate STL files (OBJ if object has materials)"
 
     def execute(self, context):
         
@@ -447,20 +447,20 @@ class MY_OT_ExportSTL(bpy.types.Operator):
         exportPath = bpy.context.scene.tp3d.get('export_path', None)
 
         if exportPath == None:
-            show_message_box("导出路径为空。请为完成的文件选择一个目录")
+            show_message_box("Export path is empty. Please select a directory for completed files")
             return {'FINISHED'}
     
         exportPath = bpy.path.abspath(exportPath)
 
         if not exportPath or exportPath == "":
-            show_message_box("导出路径为空！请选择一个有效的文件夹。")
+            show_message_box("Export path is empty! Please select a valid folder.")
             return {'FINISHED'}
         if not os.path.isdir(exportPath):
-            show_message_box(f"无效的导出目录：{exportPath}。请选择一个有效的目录。")
+            show_message_box(f"Invalid export directory: {exportPath}. Please select a valid directory.")
             return {'FINISHED'}
         
         if not bpy.context.selected_objects:
-            show_message_box("请选择要导出的对象")
+            show_message_box("Please select objects to export")
             return{'FINISHED'}
         
         export_selected_to_STL()
@@ -475,8 +475,8 @@ def open_website(self, context):
 # Operator to open a website
 class MY_OT_OpenWebsite(bpy.types.Operator):
     bl_idname = "wm.open_website"
-    bl_label = "访问项目主页"
-    bl_description = "访问TrailPrint3D项目主页获取更多信息和支持"
+    bl_label = "Visit Project Homepage"
+    bl_description = "Visit TrailPrint3D project homepage for more info and support"
 
     def execute(self, context):
         open_website(self, context)
@@ -488,8 +488,8 @@ def open_discord(self, context):
 # Operator to open a website
 class MY_OT_JoinDiscord(bpy.types.Operator):
     bl_idname = "wm.join_discord"
-    bl_label = "加入Discord"
-    bl_description = "TrailPrint3D的Discord社区！"
+    bl_label = "Join Discord"
+    bl_description = "TrailPrint3D Discord community!"
 
     def execute(self, context):
         open_discord(self, context)
@@ -497,8 +497,8 @@ class MY_OT_JoinDiscord(bpy.types.Operator):
     
 class MY_OT_Rescale(bpy.types.Operator):
     bl_idname = "wm.rescale"
-    bl_label = "缩放Z轴高度"
-    bl_description = "重新缩放当前选中对象的海拔高度"
+    bl_label = "Scale Z Height"
+    bl_description = "Rescale elevation height of currently selected object"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -556,8 +556,8 @@ class MY_OT_Rescale(bpy.types.Operator):
 
 class MY_OT_thicken(bpy.types.Operator):
     bl_idname="wm.thicken"
-    bl_label = "加厚地图"
-    bl_description = "增加选中地图的厚度"
+    bl_label = "Thicken Map"
+    bl_description = "Increase thickness of selected map"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self,context):
@@ -572,7 +572,7 @@ class MY_OT_thicken(bpy.types.Operator):
             zobj.select_set(False)
 
         if not selected_objects:
-            show_message_box("未选择任何对象。")
+            show_message_box("No object selected.")
             return {'CANCELLED'}
 
         for zobj in selected_objects:
@@ -612,8 +612,8 @@ class MY_OT_thicken(bpy.types.Operator):
 
 class MY_OT_PinCoords(bpy.types.Operator):
     bl_idname="wm.pincoords"
-    bl_label = "添加坐标图钉"
-    bl_description = "在指定坐标处放置一个图钉标记"
+    bl_label = "Add Coordinate Pin"
+    bl_description = "Place a pin marker at specified coordinates"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -646,7 +646,7 @@ class MY_OT_PinCoords(bpy.types.Operator):
 
 class MY_OT_MagnetHoles(bpy.types.Operator):
     bl_idname = "wm.magnetholes"
-    bl_label = "磁铁孔"
+    bl_label = "Magnet Holes"
     bl_options = {'REGISTER', 'UNDO'}
 
 
@@ -656,7 +656,7 @@ class MY_OT_MagnetHoles(bpy.types.Operator):
         selected_objects = context.selected_objects
 
         if not selected_objects:
-            show_message_box("未选择任何对象")
+            show_message_box("No object selected")
             return('CANCELLED')
         
         bpy.ops.object.select_all(action='DESELECT')
@@ -769,7 +769,7 @@ class MY_OT_MagnetHoles(bpy.types.Operator):
 
 class MY_OT_Dovetail(bpy.types.Operator):
     bl_idname = "wm.dovetail"
-    bl_label = "燕尾槽"
+    bl_label = "Dovetail Joints"
     bl_options = {'REGISTER', 'UNDO'}
     
     def execute(self,context):
@@ -777,7 +777,7 @@ class MY_OT_Dovetail(bpy.types.Operator):
         selected_objects = context.selected_objects
 
         if not selected_objects:
-            show_message_box("未选择任何对象")
+            show_message_box("No object selected")
             return('CANCELLED')
         
         bpy.ops.object.select_all(action='DESELECT')
@@ -918,17 +918,17 @@ class MY_OT_Dovetail(bpy.types.Operator):
 
 class MY_OT_TerrainDummy(bpy.types.Operator):
     bl_idname = "wm.dummy"
-    bl_label = "占位操作符"
-    bl_description = "此功能现已完全开放"
+    bl_label = "Placeholder Operator"
+    bl_description = "This feature is now fully unlocked"
     def execute(self,context):
-        show_message_box("所有功能现已完全开放，无需付费！")
+        show_message_box("All features are now fully unlocked!")
         return{"FINISHED"}
     
 
 
 class MY_OT_BottomMark(bpy.types.Operator):
     bl_idname = "wm.bottommark"
-    bl_label = "底部标记"
+    bl_label = "Bottom Mark"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self,context):
@@ -936,7 +936,7 @@ class MY_OT_BottomMark(bpy.types.Operator):
         selected_objects = context.selected_objects
 
         if not selected_objects:
-            show_message_box("未选择任何对象")
+            show_message_box("No object selected")
             return('CANCELLED')
         
         bpy.ops.object.select_all(action='DESELECT')
@@ -958,7 +958,7 @@ class MY_OT_BottomMark(bpy.types.Operator):
                 zobj.select_set(False)
         
         if generated == False:
-            show_message_box("选择中未找到地图对象")
+            show_message_box("No map object found in selection")
 
         bpy.context.view_layer.objects.active = selected_objects[0]
         for zobj in selected_objects:
@@ -979,8 +979,8 @@ class MY_OT_BottomMark(bpy.types.Operator):
 
 class MY_OT_ColorMountain(bpy.types.Operator):
     bl_idname="wm.colormountain"
-    bl_label = "为山地着色"
-    bl_description = "为超过指定阈值高度的山地区域添加颜色"
+    bl_label = "Color Mountains"
+    bl_description = "Add color to mountain areas above specified threshold height"
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self,context):
@@ -1057,8 +1057,8 @@ class MY_OT_ColorMountain(bpy.types.Operator):
 
 class MY_OT_ContourLines(bpy.types.Operator):
     bl_idname="wm.contourlines"
-    bl_label = "等高线"
-    bl_description = "在地图上生成等高线"
+    bl_label = "Contour Lines"
+    bl_description = "Generate contour lines on the map"
 
     def execute(self,context):
 
@@ -1073,7 +1073,7 @@ class MY_OT_ContourLines(bpy.types.Operator):
 
 
         if not selected_objects:
-            show_message_box("未选择对象。请先选择一个地图对象")
+            show_message_box("No object selected. Please select a map object first")
             return {'CANCELLED'}
 
         for obj in selected_objects:
@@ -1153,7 +1153,7 @@ class MY_OT_ContourLines(bpy.types.Operator):
     
 # Create the UI Panel
 class MY_PT_Generate(bpy.types.Panel):
-    bl_label = "创建"
+    bl_label = "Create"
     bl_idname = "PT_EmGi_3DPath+"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -1167,7 +1167,7 @@ class MY_PT_Generate(bpy.types.Panel):
         # Add input fields
         layout.separator()  # Adds a horizontal line
         # Add the script execution button
-        layout.label(text = "创建文件")
+        layout.label(text = "Create File")
         layout.operator("wm.run_my_script")
         box = layout.box()
         box.prop(props, "file_path")
@@ -1201,7 +1201,7 @@ class MY_PT_Generate(bpy.types.Panel):
         
 
 class MY_PT_Advanced(bpy.types.Panel):
-    bl_label = "高级选项"
+    bl_label = "Advanced Options"
     bl_idname = "PT_Advanced"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -1215,11 +1215,11 @@ class MY_PT_Advanced(bpy.types.Panel):
 
         #STL EXPORT
         box = layout.box()
-        box.label(text = "手动导出选定对象为 STL/OBJ")
+        box.label(text = "Manually export selected objects as STL/OBJ")
         box.operator("wm.run_my_script5")
 
         #MAP
-        layout.prop(props,"show_map", icon="TRIA_DOWN" if props.show_map else "TRIA_RIGHT", emboss=True, text="地图设置")
+        layout.prop(props,"show_map", icon="TRIA_DOWN" if props.show_map else "TRIA_RIGHT", emboss=True, text="Map Settings")
         if props.show_map:
             box = layout.box()
             box.prop(props, "fixedElevationScale")
@@ -1233,7 +1233,7 @@ class MY_PT_Advanced(bpy.types.Panel):
             box.prop(props, "ccacheSize")
             box.separator()  # Adds a horizontal line
             
-            # 旗帜标记选项
+            # Flag marker options
             box.prop(props, "addFlags")
             if props.addFlags:
                 box.prop(props, "flagHeight")
@@ -1241,23 +1241,23 @@ class MY_PT_Advanced(bpy.types.Panel):
             
             box.separator()  # Adds a horizontal line
 
-            box.label(text="自定义地图")
-            # 检查是否已生成地图（完全开放）
+            box.label(text="Custom Map")
+            # Check if map generated (fully unlocked)
             if bpy.context.scene.tp3d.sScaleHor != None:
                 box.prop(props, "mapmode")
                 if props.mapmode == "FROMPLANE":
-                    box.operator("wm.terrain", text = "从选定对象创建地图")
+                    box.operator("wm.terrain", text = "Create map from selected object")
                     #Create Blank
-                    box.operator("wm.create_blank", text = "创建空白地图")
-                    box.operator("wm.extend_tile", text = "扩展选定瓦片")
+                    box.operator("wm.create_blank", text = "Create blank map")
+                    box.operator("wm.extend_tile", text = "Extend selected tile")
                     box.prop(props,"tileSpacing")
                 elif props.mapmode == "FROMCENTER":
                     row = box.row()
                     row.prop(props, "jMapLat")
                     row.prop(props, "jMapLon")
                     box.prop(props, "jMapRadius")
-                    box.operator("wm.fromcentergeneration", text = "从1个点+半径创建地图")
-                    box.operator("wm.fromcentergenerationwithtrail", text = "从1个点+半径创建带路径的地图")
+                    box.operator("wm.fromcentergeneration", text = "Create map from 1 point + radius")
+                    box.operator("wm.fromcentergenerationwithtrail", text = "Create map with trail from 1 point + radius")
 
                 elif props.mapmode == "2POINTS":
                     row = box.row()
@@ -1266,89 +1266,89 @@ class MY_PT_Advanced(bpy.types.Panel):
                     row = box.row()
                     row.prop(props, "jMapLat2")
                     row.prop(props, "jMapLon2")
-                    box.operator("wm.2pointgeneration", text = "从2个点创建地图")
+                    box.operator("wm.2pointgeneration", text = "Create map from 2 points")
                 else:
                     box.label(text=props.scalemode)
                 
                 box.separator()
                 #Merge with Map
-                box.operator("wm.mergewithmap",text ="合并到地图")
+                box.operator("wm.mergewithmap",text ="Merge to map")
             
                 box.separator()  # Adds a horizontal line
             else:
-                box.label(text = "仅在生成地图后可用")
-                box.label(text = "(同一会话)")
-                box.operator("wm.terrain", text = "从选定对象创建地图")
-                box.operator("wm.create_blank", text = "创建空白地图")
+                box.label(text = "Only available after generating a map")
+                box.label(text = "(same session)")
+                box.operator("wm.terrain", text = "Create map from selected object")
+                box.operator("wm.create_blank", text = "Create blank map")
                 
 
             layout.separator()  # Adds a horizontal line
 
-        #MULTI - 批量生成功能（完全开放）
-        layout.prop(props,"show_chain", icon="TRIA_DOWN" if props.show_chain else "TRIA_RIGHT", emboss=True, text="批量生成")
+        #MULTI - Batch generation feature (fully unlocked)
+        layout.prop(props,"show_chain", icon="TRIA_DOWN" if props.show_chain else "TRIA_RIGHT", emboss=True, text="Batch Generation")
         if props.show_chain:
             box = layout.box()
-            box.label(text = "批量生成")
-            box.label(text = "从文件夹中的多个GPX文件创建单个地图")
+            box.label(text = "Batch Generation")
+            box.label(text = "Create single map from multiple GPX files in folder")
             box.prop(props, "chain_path")
             box.operator("wm.run_my_script2")
             layout.separator()  # Adds a horizontal line
             
 
         #INCLUDE ELEMENTS
-        layout.prop(props,"show_coloring", icon="TRIA_DOWN" if props.show_coloring else "TRIA_RIGHT", emboss=True, text="包含元素")
+        layout.prop(props,"show_coloring", icon="TRIA_DOWN" if props.show_coloring else "TRIA_RIGHT", emboss=True, text="Include Elements")
         if props.show_coloring:
             boxer = layout.box()
             box = boxer.box()
-            box.label(text = "水体")
+            box.label(text = "Water Bodies")
             box.prop(props, "col_wActive")
             box.prop(props, "col_wArea")
             box = boxer.box()
-            box.label(text = "森林")
+            box.label(text = "Forest")
             box.prop(props, "col_fActive")
             box.prop(props, "col_fArea")
             box = boxer.box()
-            box.label(text = "城市边界")
+            box.label(text = "City Boundaries")
             box.prop(props, "col_cActive")
             box.prop(props, "col_cArea")
             #layout.prop(props, "col_KeepManifold")
             boxer.prop(props,"col_PaintMap")
         
         #PIN
-        layout.prop(props,"show_pin", icon="TRIA_DOWN" if props.show_pin else "TRIA_RIGHT", emboss=True, text="图钉标记")
+        layout.prop(props,"show_pin", icon="TRIA_DOWN" if props.show_pin else "TRIA_RIGHT", emboss=True, text="Pin Markers")
         if props.show_pin:
             box = layout.box()
-            box.label(text="通过坐标设置图钉")
+            box.label(text="Set pin by coordinates")
             row = box.row()
             row.prop(props, "pinLat")
             row.prop(props, "pinLon")
-            box.operator("wm.pincoords", text = "在坐标处添加图钉")
+            box.operator("wm.pincoords", text = "Add pin at coordinates")
             box.separator()  # Adds a horizontal line
-            box.label(text="通过城市名称设置图钉")
+            box.label(text="Set pin by city name")
             box.prop(props, "cityname")
-            box.operator("wm.citycoords",text = "在城市处添加图钉")
+            box.operator("wm.citycoords",text = "Add pin at city")
         
-        #SPECIAL - 特殊功能（完全开放）
-        layout.prop(props,"show_special",icon="TRIA_DOWN" if props.show_special else "TRIA_RIGHT", emboss = True, text="特殊功能")
+        #SPECIAL - Special features (fully unlocked)
+        layout.prop(props,"show_special",icon="TRIA_DOWN" if props.show_special else "TRIA_RIGHT", emboss = True, text="Special Features")
         if props.show_special:
             box = layout.box()
-            box.label(text = "使用特殊的手工制作模板")
-            box.label(text = "例如：拼图、滑动拼图等")
+            box.label(text = "Use special handcrafted templates")
+            box.label(text = "For example: puzzles, sliding puzzles, etc.")
             box.separator()
             box.prop(props, "specialBlend_path")
-            box.operator("wm.update_special_collection", text = "加载 .blend 文件")
-            box.prop(props, "specialCollectionName", text="集合")
-            box.operator("wm.appendcollection", text = "导入")
+            box.operator("wm.update_special_collection", text = "Load .blend file")
+            box.prop(props, "specialCollectionName", text="Collection")
+            box.operator("wm.appendcollection", text = "Import")
         
         #POST PROCESS
-        layout.prop(props,"show_postProcess", icon = "TRIA_DOWN" if props.show_postProcess else "TRIA_RIGHT", emboss = True, text="后期处理")
+        layout.prop(props,"show_postProcess", icon = "TRIA_DOWN" if props.show_postProcess else "TRIA_RIGHT", emboss = True, text="Post Processing")
         if props.show_postProcess:
             box = layout.box()
-            box.label(text = "执行这些操作后需手动导出对象")
+            box.label(text = "Manual export required after these operations")
             box.separator()
-            box.label(text="山地着色")
+            box.label(text="Mountain Coloring")
             box.prop(props,"mountain_treshold")
-            box.operator("wm.colormountain", text = "为山地着色")
+            box.operator("wm.colormountain", text = "Color Mountains")
             box.separator()
 
             box.prop(props,"cl_thickness")
@@ -1358,74 +1358,74 @@ class MY_PT_Advanced(bpy.types.Panel):
 
             box.separator()
 
-            box.label(text="重新缩放选中对象的海拔高度")
+            box.label(text="Rescale elevation height of selected object")
             row = box.row()
             row.prop(props, "rescaleMultiplier")
-            row.operator("wm.rescale",text = "缩放海拔高度" )
+            row.operator("wm.rescale",text = "Scale Elevation" )
             box.separator()  # Adds a horizontal line
 
-            box.label(text = "将选中对象的地形挤出指定高度")
+            box.label(text = "Extrude terrain of selected object by specified height")
             box.prop(props,"thickenValue")
-            box.operator("wm.thicken", text = "挤出地形")
+            box.operator("wm.thicken", text = "Extrude Terrain")
             box.separator()
 
             row = box.row()
             row.prop(props,"magnetHeight")
             row.prop(props,"magnetDiameter")
-            box.operator("wm.magnetholes", text = "添加磁铁孔")
+            box.operator("wm.magnetholes", text = "Add Magnet Holes")
 
             box.separator()
-            box.operator("wm.dovetail", text = "添加燕尾槽切口")
+            box.operator("wm.dovetail", text = "Add Dovetail Joints")
 
             box.separator()
-            box.operator("wm.bottommark", text = "添加底部标记")
+            box.operator("wm.bottommark", text = "Add Bottom Mark")
 
 
         #API
-        layout.prop(props,"show_api", icon="TRIA_DOWN" if props.show_api else "TRIA_RIGHT", emboss=True, text="海拔数据API")
+        layout.prop(props,"show_api", icon="TRIA_DOWN" if props.show_api else "TRIA_RIGHT", emboss=True, text="Elevation Data API")
         if props.show_api:
             box = layout.box()
             box.prop(props,"api")
             if props.api == "OPENTOPODATA":
                 box.prop(props, "dataset")
                 box.separator()  # Adds a horizontal line
-                box.label(text="如果您自托管了Opentopodata服务器:")
+                box.label(text="If you self-host an Opentopodata server:")
                 box.prop(props, "selfHosted")
                 layout.separator()  # Adds a horizontal line
 
         #STATS
-        layout.prop(props,"show_stats", icon="TRIA_DOWN" if props.show_stats else "TRIA_RIGHT", emboss=True, text="统计信息")
+        layout.prop(props,"show_stats", icon="TRIA_DOWN" if props.show_stats else "TRIA_RIGHT", emboss=True, text="Statistics")
         if props.show_stats:
             box = layout.box()
-            box.label(text="获取选中地图的生成参数")
+            box.label(text="Get generation parameters of selected map")
             box.operator("object.show_custom_props_popup")
             box = layout.box()
             box.label(text = props.o_verticesPath)
             box.label(text = props.o_verticesMap)
             box.label(text = props.o_mapScale)
-            box.label(text = f"水平缩放: {props.sScaleHor}")
-            box.label(text = f"地图尺寸: {props.sMapInKm}")
+            box.label(text = f"Horizontal Scale: {props.sScaleHor}")
+            box.label(text = f"Map Size: {props.sMapInKm}")
             box.label(text = props.o_time)
             box.separator()  # Adds a horizontal line
-            box.label(text = "Opentopodata API调用:")
+            box.label(text = "Opentopodata API calls:")
             box.label(text = props.o_apiCounter_OpenTopoData)
-            box.label(text = "OpenElevation API调用:")
+            box.label(text = "OpenElevation API calls:")
             box.label(text = props.o_apiCounter_OpenElevation)
             layout.separator()  # Adds a horizontal line
 
         #ATTRIBUTION
-        layout.prop(props,"show_attribution", icon="TRIA_DOWN" if props.show_attribution else "TRIA_RIGHT", emboss=True, text="数据来源声明")
+        layout.prop(props,"show_attribution", icon="TRIA_DOWN" if props.show_attribution else "TRIA_RIGHT", emboss=True, text="Data Attribution")
         if props.show_attribution:
             box = layout.box()
-            box.label(text = "数据来源声明")
-            box.label(text = "海拔数据来自OpenTopoData，使用SRTM和其他数据集。")
-            box.label(text = "海拔数据来自Open-Elevation，基于NASA的航天飞机雷达地形测绘(SRTM)数据。")
-            box.label(text = "水体、森林、城市数据 © OpenStreetMap贡献者")
-            box.label(text = "地形数据来自Mapzen，基于OpenStreetMap贡献者、NASA SRTM和USGS数据。")
+            box.label(text = "Data Attribution")
+            box.label(text = "Elevation data from OpenTopoData using SRTM and other datasets.")
+            box.label(text = "Elevation data from Open-Elevation based on NASA SRTM data.")
+            box.label(text = "Water, forest, city data © OpenStreetMap contributors")
+            box.label(text = "Terrain data from Mapzen based on OpenStreetMap contributors, NASA SRTM and USGS.")
             layout.separator()  # Adds a horizontal line
 
 class MY_PT_Shapes(bpy.types.Panel):
-    bl_label = "附加形状设置"
+    bl_label = "Additional Shape Settings"
     bl_idname = "PT_ShapeSettings"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -1443,7 +1443,7 @@ class MY_PT_Shapes(bpy.types.Panel):
             layout.prop(props, "textSize")
             layout.prop(props, "textSizeTitle")
             layout.separator()  # Adds a horizontal line
-            layout.label(text = "自定义文本内容:")
+            layout.label(text = "Custom Text Content:")
             layout.prop(props, "overwriteLength")
             layout.prop(props, "overwriteHeight")
             layout.prop(props, "overwriteTime")
@@ -1455,8 +1455,8 @@ class MY_PT_Shapes(bpy.types.Panel):
 
 class OBJECT_OT_ShowCustomPropsPopup(bpy.types.Operator):
     bl_idname = "object.show_custom_props_popup"
-    bl_label = "生成参数"
-    bl_description = "显示生成此对象时使用的设置参数(需选中地图对象)"
+    bl_label = "Generation Parameters"
+    bl_description = "Show settings used to generate this object (select map object)"
     bl_options = {'REGISTER'}
 
     MAX_PER_COLUMN = 25
@@ -1468,13 +1468,13 @@ class OBJECT_OT_ShowCustomPropsPopup(bpy.types.Operator):
         obj = context.active_object
 
         if not obj:
-            layout.label(text="未选择活动对象。", icon="ERROR")
+            layout.label(text="No active object selected.", icon="ERROR")
             return
 
         custom_props = [k for k in obj.keys() if not k.startswith("_")]
 
         if not custom_props:
-            layout.label(text="未找到自定义属性。请选择一个地图对象", icon="INFO")
+            layout.label(text="No custom properties found. Please select a map object", icon="INFO")
             return
 
         total = len(custom_props)
@@ -1563,53 +1563,53 @@ def unregister():
 
 def get_chinese_font():
     """
-    查找并返回系统中可用的中文字体
+    Find and return an available system font
     
-    功能说明：
-    1. 根据操作系统类型查找常见的中文字体
-    2. 按优先级依次尝试多个字体文件
-    3. 找到第一个可用的字体后立即返回
+    Features:
+    1. Find common fonts based on operating system
+    2. Try multiple font files in priority order
+    3. Return immediately when first available font is found
     
-    支持的操作系统：
-    - macOS: 苹方、华文黑体、宋体等
-    - Windows: 微软雅黑、黑体、宋体等
-    - Linux: Noto Sans CJK、文泉驿等
+    Supported operating systems:
+    - macOS: PingFang, STHeiti, Songti, etc.
+    - Windows: Microsoft YaHei, SimHei, SimSun, etc.
+    - Linux: Noto Sans CJK, WenQuanYi, etc.
     
-    返回值：
-        str: 字体文件的完整路径，如果未找到则返回空字符串
+    Returns:
+        str: Full path to font file, or empty string if not found
     """
     
-    # 根据操作系统定义中文字体列表
-    if platform.system() == "Darwin":  # macOS系统
+    # Define font list based on operating system
+    if platform.system() == "Darwin":  # macOS
         possible_fonts = [
-            "/System/Library/Fonts/PingFang.ttc",           # 苹方（推荐）
-            "/System/Library/Fonts/STHeiti Light.ttc",      # 华文黑体
-            "/System/Library/Fonts/Supplemental/Songti.ttc", # 宋体
-            "/Library/Fonts/Arial Unicode.ttf"              # Arial Unicode（备用）
+            "/System/Library/Fonts/PingFang.ttc",           # PingFang (recommended)
+            "/System/Library/Fonts/STHeiti Light.ttc",      # STHeiti
+            "/System/Library/Fonts/Supplemental/Songti.ttc", # Songti
+            "/Library/Fonts/Arial Unicode.ttf"              # Arial Unicode (fallback)
         ]
-    elif platform.system() == "Windows":  # Windows系统
+    elif platform.system() == "Windows":  # Windows
         possible_fonts = [
-            "C:/Windows/Fonts/msyh.ttc",     # 微软雅黑（推荐）
-            "C:/Windows/Fonts/simhei.ttf",   # 黑体
-            "C:/Windows/Fonts/simsun.ttc",   # 宋体
-            "C:/Windows/Fonts/simkai.ttf"    # 楷体（备用）
+            "C:/Windows/Fonts/msyh.ttc",     # Microsoft YaHei (recommended)
+            "C:/Windows/Fonts/simhei.ttf",   # SimHei
+            "C:/Windows/Fonts/simsun.ttc",   # Songti
+            "C:/Windows/Fonts/simkai.ttf"    # KaiTi (fallback)
         ]
-    else:  # Linux系统
+    else:  # Linux
         possible_fonts = [
-            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",  # Noto思源
-            "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",          # 文泉驿微米黑
-            "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",            # 文泉驿正黑
-            "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf" # Droid备用
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",  # Noto Sans
+            "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",          # WenQuanYi Micro Hei
+            "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",            # WenQuanYi Zen Hei
+            "/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf" # Droid fallback
         ]
     
-    # 遍历字体列表，找到第一个存在的字体文件
+    # Iterate through font list to find first existing font file
     for font_path in possible_fonts:
         if os.path.exists(font_path):
-            print(f"找到可用的中文字体: {font_path}")
+            print(f"Found available font: {font_path}")
             return font_path
     
-    # 如果没有找到任何中文字体，打印警告信息
-    print("警告: 未找到系统中文字体，文本可能无法正确显示中文")
+    # If no font found, print warning
+    print("Warning: No system font found, text may not display correctly")
     return ""
 
 def load_counter():
@@ -1921,7 +1921,7 @@ def read_gpx_file():
     elif file_extension == '.igc':
         coords= read_igc(gpx_file_path)
     else:
-        show_message_box("不支持的文件格式。请使用.gpx或.igc文件。")
+        show_message_box("Unsupported file format. Please use .gpx or .igc files.")
         toggle_console()
         return
 
@@ -2305,21 +2305,21 @@ def calculate_scale(mapSize, coordinates):
 
 def convert_to_blender_coordinates(lat, lon, elevation, timestamp):
     """
-    将GPS坐标转换为Blender 3D坐标系统
+    Convert GPS coordinates to Blender 3D coordinate system
     
-    坐标转换说明：
-    - GPS使用经纬度（球面坐标系）
-    - Blender使用XYZ（笛卡尔坐标系）
-    - 需要考虑地球曲率和投影变形
+    Coordinate conversion notes:
+    - GPS uses latitude/longitude (spherical coordinates)
+    - Blender uses XYZ (Cartesian coordinates)
+    - Must account for Earth curvature and projection distortion
     
-    参数：
-        lat (float): 纬度，范围-90到90度
-        lon (float): 经度，范围-180到180度
-        elevation (float): 海拔高度，单位米
-        timestamp (str): 时间戳（用于轨迹时间信息）
+    Parameters:
+        lat (float): Latitude, range -90 to 90 degrees
+        lon (float): Longitude, range -180 to 180 degrees
+        elevation (float): Elevation in meters
+        timestamp (str): Timestamp (for track time info)
     
-    返回：
-        tuple: (x, y, z, timestamp) Blender坐标系中的位置
+    Returns:
+        tuple: (x, y, z, timestamp) Position in Blender coordinate system
     """
 
     scaleHor = bpy.context.scene.tp3d.sScaleHor
@@ -3112,32 +3112,32 @@ def update_text_object(obj_name, new_text):
 
 def create_flag(name, position, flag_type="START", height=5, flag_width=3):
     """
-    创建旗帜标记（起点或终点）
+    Create flag marker (start or finish)
     
-    功能说明：
-    - 在指定位置创建3D旗帜模型
-    - 包含旗杆、三角形旗面和底部插入座
-    - 起点旗帜为绿色，终点旗帜为红色
-    - 底部设计为可插入底板的结构（圆柱+底座）
+    Features:
+    - Create 3D flag model at specified position
+    - Includes pole, triangular flag and base insert
+    - Start flag is green, finish flag is red
+    - Base designed for insertion into plate (cylinder + base)
     
-    参数：
-        name (str): 旗帜对象的名称
-        position (tuple): 旗帜位置 (x, y, z)
-        flag_type (str): 旗帜类型 "START" 或 "FINISH"
-        height (float): 旗杆高度（毫米）
-        flag_width (float): 旗面宽度（毫米）
+    Parameters:
+        name (str): Name of the flag object
+        position (tuple): Flag position (x, y, z)
+        flag_type (str): Flag type "START" or "FINISH"
+        height (float): Pole height in millimeters
+        flag_width (float): Flag width in millimeters
     
-    返回：
-        object: 创建的旗帜对象
+    Returns:
+        object: The created flag object
     """
     
-    # 设计参数
-    pole_radius = 0.4        # 旗杆半径
-    insert_depth = 2.0       # 插入深度
-    base_radius = 0.8        # 底座半径（比旗杆粗，便于固定）
-    base_height = 0.5        # 底座高度
+    # Design parameters
+    pole_radius = 0.4        # Pole radius
+    insert_depth = 2.0       # Insert depth
+    base_radius = 0.8        # Base radius (thicker than pole for stability)
+    base_height = 0.5        # Base height
     
-    # 1. 创建旗杆主体（从底座顶部到顶部）
+    # 1. Create pole body (from base top to top)
     bpy.ops.mesh.primitive_cylinder_add(
         radius=pole_radius,
         depth=height,
@@ -3146,16 +3146,16 @@ def create_flag(name, position, flag_type="START", height=5, flag_width=3):
     pole = bpy.context.active_object
     pole.name = f"{name}_Pole"
     
-    # 2. 创建插入部分（在底板下方）
+    # 2. Create insert part (below plate)
     bpy.ops.mesh.primitive_cylinder_add(
-        radius=pole_radius * 0.9,  # 略细，便于插入
+        radius=pole_radius * 0.9,  # Slightly thinner for easier insertion
         depth=insert_depth,
         location=(position[0], position[1], position[2] - insert_depth/2)
     )
     insert_part = bpy.context.active_object
     insert_part.name = f"{name}_Insert"
     
-    # 3. 创建底座（在地表，便于固定和打印）
+    # 3. Create base (at surface, for stability and printing)
     bpy.ops.mesh.primitive_cylinder_add(
         radius=base_radius,
         depth=base_height,
@@ -3164,49 +3164,49 @@ def create_flag(name, position, flag_type="START", height=5, flag_width=3):
     base = bpy.context.active_object
     base.name = f"{name}_Base"
     
-    # 4. 创建旗面（三角形）
-    flag_height = flag_width * 0.6  # 旗面高度为宽度的60%
+    # 4. Create flag (triangle)
+    flag_height = flag_width * 0.6  # Flag height is 60% of width
     
-    # 定义三角形旗面的顶点
+    # Define triangular flag vertices
     verts = [
-        (0, 0, 0),                      # 左下角（靠近旗杆）
-        (flag_width, flag_height/2, 0), # 右边中点（旗面尖端）
-        (0, flag_height, 0)             # 左上角（靠近旗杆）
+        (0, 0, 0),                      # Bottom left (near pole)
+        (flag_width, flag_height/2, 0), # Right center (flag tip)
+        (0, flag_height, 0)             # Top left (near pole)
     ]
     
-    # 定义面
+    # Define faces
     faces = [(0, 1, 2)]
     
-    # 创建网格
+    # Create mesh
     mesh = bpy.data.meshes.new(f"{name}_Flag_Mesh")
     mesh.from_pydata(verts, [], faces)
     mesh.update()
     
-    # 创建对象
+    # Create object
     flag = bpy.data.objects.new(f"{name}_Flag", mesh)
     bpy.context.collection.objects.link(flag)
     
-    # 定位旗面（在旗杆顶部）
+    # Position flag (at pole top)
     flag.location = (
-        position[0] + pole_radius,  # 紧贴旗杆边缘
+        position[0] + pole_radius,  # Against pole edge
         position[1],
         position[2] + height - flag_height/2
     )
     
-    # 旋转旗面使其垂直
+    # Rotate flag to vertical
     flag.rotation_euler = (math.radians(90), 0, 0)
     
-    # 设置材质颜色
+    # Set material color
     if flag_type == "START":
-        # 起点：绿色
+        # Start: green
         color = (0.0, 0.8, 0.0, 1.0)  # RGBA
         mat_name = "FLAG_START"
     else:  # FINISH
-        # 终点：红色
+        # Finish: red
         color = (0.9, 0.0, 0.0, 1.0)  # RGBA
         mat_name = "FLAG_FINISH"
     
-    # 创建或获取材质
+    # Create or get material
     mat = bpy.data.materials.get(mat_name)
     if mat is None:
         mat = bpy.data.materials.new(name=mat_name)
@@ -3218,13 +3218,13 @@ def create_flag(name, position, flag_type="START", height=5, flag_width=3):
             bsdf.inputs["Metallic"].default_value = 0.0
             bsdf.inputs["Roughness"].default_value = 0.5
     
-    # 应用材质到旗面
+    # Apply material to flag
     if flag.data.materials:
         flag.data.materials[0] = mat
     else:
         flag.data.materials.append(mat)
     
-    # 为旗杆设置灰色材质
+    # Set gray material for pole
     pole_mat = bpy.data.materials.get("FLAG_POLE")
     if pole_mat is None:
         pole_mat = bpy.data.materials.new(name="FLAG_POLE")
@@ -3241,19 +3241,19 @@ def create_flag(name, position, flag_type="START", height=5, flag_width=3):
     else:
         pole.data.materials.append(pole_mat)
     
-    # 为插入部分应用相同的旗杆材质
+    # Apply same pole material to insert part
     if insert_part.data.materials:
         insert_part.data.materials[0] = pole_mat
     else:
         insert_part.data.materials.append(pole_mat)
     
-    # 为底座应用旗杆材质
+    # Apply pole material to base
     if base.data.materials:
         base.data.materials[0] = pole_mat
     else:
         base.data.materials.append(pole_mat)
     
-    # 合并所有部分：旗杆 + 插入部分 + 底座 + 旗面
+    # Join all parts: pole + insert + base + flag
     bpy.ops.object.select_all(action='DESELECT')
     pole.select_set(True)
     insert_part.select_set(True)
@@ -3265,32 +3265,32 @@ def create_flag(name, position, flag_type="START", height=5, flag_width=3):
     combined_flag = bpy.context.active_object
     combined_flag.name = name
     
-    # 添加自定义属性标记
+    # Add custom property markers
     combined_flag["Object type"] = "FLAG"
     combined_flag["Flag Type"] = flag_type
     combined_flag["Addon"] = "TrailPrint3D"
     
-    print(f"✓ 创建{flag_type}旗帜于位置: ({position[0]:.2f}, {position[1]:.2f}, {position[2]:.2f})")
+    print(f"Created {flag_type} flag at position: ({position[0]:.2f}, {position[1]:.2f}, {position[2]:.2f})")
     
     return combined_flag
 
 def find_elevation_extremes(obj):
     """
-    查找网格上海拔最高和最低的点
+    Find highest and lowest elevation points on mesh
     
-    参数：
-        obj: Blender网格对象
+    Parameters:
+        obj: Blender mesh object
     
-    返回：
+    Returns:
         tuple: ((min_x, min_y, min_z), (max_x, max_y, max_z))
-               最低点坐标和最高点坐标
+               Lowest point coords and highest point coords
     """
     if obj.type != 'MESH':
         return None, None
     
     mesh = obj.data
     
-    # 获取世界坐标系中的顶点位置
+    # Get vertex positions in world coordinates
     matrix_world = obj.matrix_world
     
     min_z = float('inf')
@@ -3299,7 +3299,7 @@ def find_elevation_extremes(obj):
     max_point = None
     
     for vert in mesh.vertices:
-        # 转换到世界坐标
+        # Convert to world coordinates
         world_co = matrix_world @ vert.co
         
         if world_co.z < min_z:
@@ -3310,65 +3310,65 @@ def find_elevation_extremes(obj):
             max_z = world_co.z
             max_point = (world_co.x, world_co.y, world_co.z)
     
-    print(f"地形分析: 最低点海拔={min_z:.2f}mm, 最高点海拔={max_z:.2f}mm, 高度差={max_z-min_z:.2f}mm")
+    print(f"Terrain analysis: Lowest={min_z:.2f}mm, Highest={max_z:.2f}mm, Diff={max_z-min_z:.2f}mm")
     
     return min_point, max_point
 
 def find_path_endpoints(curve_obj):
     """
-    查找路径曲线的起点和终点
+    Find start and end points of path curve
     
-    参数：
-        curve_obj: Blender曲线对象
+    Parameters:
+        curve_obj: Blender curve object
     
-    返回：
-        tuple: (start_point, end_point) - 起点和终点的世界坐标
+    Returns:
+        tuple: (start_point, end_point) - Start and end world coordinates
     """
     if curve_obj is None or curve_obj.type != 'CURVE':
-        print("错误: 提供的对象不是有效的曲线对象")
+        print("Error: Provided object is not a valid curve object")
         return None, None
     
     curve_data = curve_obj.data
     matrix_world = curve_obj.matrix_world
     
-    # 获取第一条样条线
+    # Get first spline
     if len(curve_data.splines) == 0:
-        print("错误: 曲线没有样条线")
+        print("Error: Curve has no splines")
         return None, None
     
     spline = curve_data.splines[0]
     
-    # 获取起点和终点
+    # Get start and end points
     if len(spline.points) > 0:
-        # NURBS曲线
+        # NURBS curve
         start_local = spline.points[0].co[:3]
         end_local = spline.points[-1].co[:3]
     elif len(spline.bezier_points) > 0:
-        # Bezier曲线
+        # Bezier curve
         start_local = spline.bezier_points[0].co
         end_local = spline.bezier_points[-1].co
     else:
-        print("错误: 样条线没有点")
+        print("Error: Spline has no points")
         return None, None
     
-    # 转换到世界坐标
+    # Convert to world coordinates
     start_world = matrix_world @ Vector(start_local)
     end_world = matrix_world @ Vector(end_local)
     
     start_point = (start_world.x, start_world.y, start_world.z)
     end_point = (end_world.x, end_world.y, end_world.z)
     
-    print(f"路径分析: 起点=({start_point[0]:.2f}, {start_point[1]:.2f}, {start_point[2]:.2f})")
-    print(f"路径分析: 终点=({end_point[0]:.2f}, {end_point[1]:.2f}, {end_point[2]:.2f})")
+    print(f"Path analysis: Start=({start_point[0]:.2f}, {start_point[1]:.2f}, {start_point[2]:.2f})")
+    print(f"Path analysis: End=({end_point[0]:.2f}, {end_point[1]:.2f}, {end_point[2]:.2f})")
     
     return start_point, end_point
 
 def fix_mesh_anomalies(obj, threshold=0.1):
     """
-    修复网格中的异常点
-    - 删除孤立的顶点
-    - 修复非流形边
-    - 平滑异常的尖刺
+    Fix anomaly points in mesh
+    - Delete isolated vertices
+    - Fix non-manifold edges
+    - Smooth anomalous spikes
     """
     if obj.type != 'MESH':
         return
@@ -3376,23 +3376,23 @@ def fix_mesh_anomalies(obj, threshold=0.1):
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.mode_set(mode='EDIT')
     
-    # 获取网格数据
+    # Get mesh data
     bm = bmesh.from_edit_mesh(obj.data)
     
-    # 1. 删除孤立的顶点
+    # 1. Delete isolated vertices
     isolated_verts = [v for v in bm.verts if not v.link_edges]
     if isolated_verts:
         bmesh.ops.delete(bm, geom=isolated_verts, context='VERTS')
-        print(f"删除了 {len(isolated_verts)} 个孤立顶点")
+        print(f"Deleted {len(isolated_verts)} isolated vertices")
     
-    # 2. 删除重复的顶点
+    # 2. Delete duplicate vertices
     bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=threshold * 0.01)
     
-    # 3. 检测并修复异常高的顶点（相对于邻近顶点）
+    # 3. Detect and fix abnormally high vertices (relative to neighbors)
     fixed_count = 0
     for v in bm.verts:
         if len(v.link_edges) > 0:
-            # 计算相邻顶点的平均Z值
+            # Calculate average Z value of neighboring vertices
             neighbor_z = []
             for edge in v.link_edges:
                 other_vert = edge.other_vert(v)
@@ -3400,31 +3400,31 @@ def fix_mesh_anomalies(obj, threshold=0.1):
             
             if neighbor_z:
                 avg_z = sum(neighbor_z) / len(neighbor_z)
-                # 如果当前顶点的Z值与邻近顶点的平均值相差太大，则修正它
+                # If current vertex Z differs too much from neighbor average, fix it
                 if abs(v.co.z - avg_z) > threshold * 10:
                     v.co.z = avg_z
                     fixed_count += 1
     
     if fixed_count > 0:
-        print(f"修复了 {fixed_count} 个异常点")
+        print(f"Fixed {fixed_count} anomaly points")
     
-    # 4. 重新计算法线
+    # 4. Recalculate normals
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     
-    # 更新网格
+    # Update mesh
     bmesh.update_edit_mesh(obj.data)
     bm.free()
     
     bpy.ops.object.mode_set(mode='OBJECT')
     
-    # 5. 应用平滑修改器来平滑表面
+    # 5. Apply smooth modifier to smooth surface
     smooth_mod = obj.modifiers.new(name="Smooth", type='SMOOTH')
     smooth_mod.iterations = 2
     smooth_mod.factor = 0.5
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.modifier_apply(modifier=smooth_mod.name)
     
-    print(f"网格修复完成: {obj.name}")
+    print(f"Mesh repair complete: {obj.name}")
         
 def export_to_STL(zobj):
     
@@ -3456,7 +3456,7 @@ def export_selected_to_STL():
     active_obj = bpy.context.active_object
 
     if not selected_objects:
-            show_message_box("未选择任何对象")
+            show_message_box("No object selected")
             return('CANCELLED')
 
     for zobj in selected_objects:
@@ -3512,30 +3512,30 @@ def create_text(name, text, position, scale_multiplier, rotation=(0, 0, 0), extr
     
     global textFont
 
-    # 如果未指定字体，自动查找系统中文字体
+    # If no font specified, auto-find system font
     if textFont == "":
         textFont = get_chinese_font()
         
-        # 如果没有找到中文字体，使用系统默认英文字体作为备用
+        # If no font found, use default system font as fallback
         if textFont == "":
             if platform.system() == "Windows":
-                textFont = "C:/WINDOWS/FONTS/ariblk.ttf"  # Windows默认粗体
+                textFont = "C:/WINDOWS/FONTS/ariblk.ttf"  # Windows default bold
             elif platform.system() == "Darwin":
-                textFont = "/System/Library/Fonts/Supplemental/Arial Black.ttf"  # macOS默认粗体
+                textFont = "/System/Library/Fonts/Supplemental/Arial Black.ttf"  # macOS default bold
             else:
-                textFont = ""  # Linux系统使用Blender内置字体
+                textFont = ""  # Linux uses Blender built-in font
 
-    # 设置文本内容和挤出厚度
+    # Set text content and extrusion thickness
     txt_data.body = text
     txt_data.extrude = extrude
     
-    # 尝试加载指定的字体文件
+    # Try to load specified font file
     try:
         if textFont != "":
             txt_data.font = bpy.data.fonts.load(textFont)
     except Exception as e:
-        print(f"加载字体失败: {e}，使用Blender默认字体")
-        # 如果加载失败，Blender会自动使用内置的默认字体
+        print(f"Font load failed: {e}, using Blender default font")
+        # If load fails, Blender will use built-in default font
     txt_data.align_x = 'CENTER'
     txt_data.align_y = "CENTER"
     
@@ -4361,23 +4361,23 @@ def separate_duplicate_xy(coordinates, offset=0.05):
 
 def single_color_mode(crv, mapName):
     """
-    单色模式处理：将路径嵌入到地图中，适合单色3D打印机
+    Single color mode: Embed path into map, suitable for single-color 3D printers
     
-    工作原理：
-    1. 将路径曲线转换为网格并与地图相交
-    2. 创建稍厚的路径副本
-    3. 使用布尔操作从地图中减去厚路径，创建凹槽
-    4. 将原始路径放入凹槽中，使其与地图平齐
+    How it works:
+    1. Convert path curve to mesh and intersect with map
+    2. Create slightly thicker path copy
+    3. Use boolean to subtract thick path from map, creating groove
+    4. Place original path in groove, flush with map
     
-    注意：此函数必须在plateInsert之后调用，以避免底板包含路径信息
+    Note: Must call after plateInsert to avoid plate containing path info
     
-    参数：
-        crv: 路径曲线对象
-        mapName: 地图对象的名称
+    Parameters:
+        crv: Path curve object
+        mapName: Name of map object
     """
     map = bpy.data.objects.get(mapName)
     tol = bpy.context.scene.tp3d.tolerance
-    print(f"单色模式容差: {tol}")
+    print(f"Single color mode tolerance: {tol}")
     crv_data = crv.data
     crv_data.dimensions = "2D"
     crv_data.dimensions = "3D"
@@ -4768,7 +4768,7 @@ def coloring_main(map,kind = "WATER"):
                     
 
                 except:
-                    show_message_box("获取OSM数据时出错，请重试")
+                    show_message_box("Error fetching OSM data, please try again")
                     continue
 
                 data = resp.json()
@@ -5237,25 +5237,25 @@ def delete_non_manifold(object):
 
 def plateInsert(plate,map):
     """
-    底座下凹处理：在底板上创建与地图形状匹配的凹槽
+    Base indent: Create groove in plate matching map shape
     
-    工作原理：
-    1. 复制地图对象并稍微放大（加上容差）
-    2. 将底板上移指定距离
-    3. 使用布尔差集操作从底板中减去放大的地图副本
-    4. 这样地图可以嵌入到底板的凹槽中
+    How it works:
+    1. Copy map object and slightly enlarge (plus tolerance)
+    2. Move plate up by specified distance
+    3. Use boolean difference to subtract enlarged map copy from plate
+    4. This allows map to fit into plate groove
     
-    重要：此函数必须在single_color_mode之前调用
-           否则底板会包含已合并的路径信息
+    Important: Must call before single_color_mode
+           Otherwise plate will contain merged path info
     
-    参数：
-        plate: 底板对象
-        map: 地图对象（应该是未合并路径的原始地图）
+    Parameters:
+        plate: Plate object
+        map: Map object (should be original map without merged path)
     """
     tol = bpy.context.scene.tp3d.tolerance
     dist = bpy.context.scene.tp3d.plateInsertValue
 
-    # 复制地图对象并稍微放大以创建合适的间隙
+    # Copy map object and slightly enlarge for proper gap
     map_copy = map.copy()
     map_copy.data = map.data.copy()
     bpy.context.collection.objects.link(map_copy)
@@ -5267,7 +5267,7 @@ def plateInsert(plate,map):
     plate.select_set(True)
     bpy.context.view_layer.objects.active = plate
 
-    # 使用布尔操作从底板中减去地图形状
+    # Use boolean to subtract map shape from plate
     mod = plate.modifiers.new(name="Boolean", type='BOOLEAN')
     mod.operation = 'DIFFERENCE'
     mod.solver = "MANIFOLD"
@@ -5277,7 +5277,7 @@ def plateInsert(plate,map):
     
     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
 
-    # 删除临时的地图副本
+    # Delete temporary map copy
     bpy.data.objects.remove(map_copy, do_unlink=True)
 
 def selectBottomFaces(obj):
@@ -5353,11 +5353,11 @@ def recalculateNormals(obj):
 def writeMetadata(obj, type = "MAP"):
 
 
-    # 为生成的地图对象保存元数据信息
+    # Save metadata info for generated map object
     if type == "MAP":
-        obj["Object type"] = type  # 对象类型：地图
-        obj["Addon"] = category     # 插件名称
-        obj["Generation Duration"] = str(duration) + " seconds"  # 生成耗时
+        obj["Object type"] = type  # Object type: map
+        obj["Addon"] = category     # Plugin name
+        obj["Generation Duration"] = str(duration) + " seconds"  # Generation time
         obj["Shape"] = bpy.context.scene.tp3d.shape
         obj["Resolution"] = bpy.context.scene.tp3d.num_subdivisions
         obj["Elevation Scale"] = bpy.context.scene.tp3d.scaleElevation
@@ -5408,22 +5408,22 @@ def writeMetadata(obj, type = "MAP"):
 
 
 
-    # 为路径对象保存元数据
+    # Save metadata for path object
     if type == "TRAIL":
-        obj["Object type"] = type  # 对象类型：路径
-        obj["Addon"] = category     # 插件名称
+        obj["Object type"] = type  # Object type: path
+        obj["Addon"] = category     # Plugin name
         obj["overwritePathElevation"] = bpy.context.scene.tp3d.overwritePathElevation
     
-    # 为城市/水体/森林对象保存元数据
+    # Save metadata for city/water/forest object
     if type == "CITY" or type == "WATER" or type == "FOREST":
-        obj["Object type"] = type  # 对象类型：城市、水体或森林
-        obj["Addon"] = category     # 插件名称
-        obj["minThickness"] = bpy.context.scene.tp3d.minThickness  # 最小厚度
+        obj["Object type"] = type  # Object type: city, water or forest
+        obj["Addon"] = category     # Plugin name
+        obj["minThickness"] = bpy.context.scene.tp3d.minThickness  # Minimum thickness
 
-    # 为底板对象保存元数据
+    # Save metadata for plate object
     if type == "PLATE":
-        obj["Object type"] = type  # 对象类型：底板
-        obj["Addon"] = category     # 插件名称
+        obj["Object type"] = type  # Object type: plate
+        obj["Addon"] = category     # Plugin name
         obj["Shape"] = bpy.context.scene.tp3d.shape
         obj["textFont"] = bpy.context.scene.tp3d.textFont
         obj["textSize"] = bpy.context.scene.tp3d.textSize
@@ -5449,58 +5449,58 @@ def writeMetadata(obj, type = "MAP"):
 
 def show_message_box(message, ic="ERROR", ti="ERROR"):
     """
-    在Blender界面中显示消息弹窗
+    Show message popup in Blender interface
     
-    参数：
-        message (str): 要显示的消息内容
-        ic (str): 图标类型，如"ERROR"、"INFO"、"WARNING"
-        ti (str): 弹窗标题
+    Parameters:
+        message (str): Message content to display
+        ic (str): Icon type, e.g. "ERROR", "INFO", "WARNING"
+        ti (str): Popup title
     """
     #toggle_console()
     def draw(self, context):
         self.layout.label(text=message)
-    print(message)  # 同时在控制台输出
+    print(message)  # Also output to console
     bpy.context.window_manager.popup_menu(draw, title=ti, icon=ic)
 
 def toggle_console():
     """
-    切换Blender控制台窗口的显示状态（仅Windows系统）
+    Toggle Blender console window visibility (Windows only)
     
-    用于调试和查看详细的生成过程信息
+    For debugging and viewing detailed generation info
     """
     try:
         if platform.system() == "Windows":
             bpy.ops.wm.console_toggle()
     except Exception as e:
-        print(f"无法切换控制台: {e}")
+        print(f"Cannot toggle console: {e}")
     
 def runGeneration(type):
     """
-    主生成函数：执行3D地图生成的完整流程
+    Main generation function: Execute complete 3D map generation process
     
-    这是插件的核心函数，整合了所有功能模块：
-    1. 读取GPS轨迹文件
-    2. 获取海拔数据
-    3. 生成3D地形网格
-    4. 创建路径曲线
-    5. 应用材质和颜色
-    6. 导出STL文件
+    This is the core plugin function, integrating all modules:
+    1. Read GPS track file
+    2. Fetch elevation data
+    3. Generate 3D terrain mesh
+    4. Create path curve
+    5. Apply materials and colors
+    6. Export STL file
     
-    参数：
-        type (int): 生成模式
-            0 = 单个GPX文件
-            1 = 批量处理多个GPX文件
-            2 = 从中心点和半径创建地图
-            3 = 从两个坐标点创建地图
-            4 = 带路径的中心点地图
+    Parameters:
+        type (int): Generation mode
+            0 = Single GPX file
+            1 = Batch process multiple GPX files
+            2 = Create map from center point and radius
+            3 = Create map from two coordinate points
+            4 = Center point map with path
     """
     
-    # ===== 检查Blender版本 =====
-    # 插件需要Blender 4.5.0或更高版本才能正常运行
+    # ===== Check Blender version =====
+    # Plugin requires Blender 4.5.0 or higher to run properly
     required_version = (4, 5, 0)
 
     if bpy.app.version < required_version:
-        show_message_box(f"此插件需要 Blender {required_version[0]}.{required_version[1]} 或更高版本。(您正在使用 {bpy.app.version_string})。")
+        show_message_box(f"This plugin requires Blender {required_version[0]}.{required_version[1]} or higher. (You are using {bpy.app.version_string}).")
         return
     
     start_time = time.time()
@@ -5522,17 +5522,17 @@ def runGeneration(type):
     global exportPath
     exportPath = bpy.context.scene.tp3d.get('export_path', None)
     
-    # 如果没有设置导出路径，使用GPX文件所在目录作为默认路径
+    # If no export path set, use GPX file directory as default
     if not exportPath or exportPath == "":
         if gpx_file_path and gpx_file_path != "":
             import os
-            # 获取GPX文件的目录
+            # Get GPX file directory
             gpx_dir = os.path.dirname(gpx_file_path)
-            # 获取GPX文件名（不含扩展名）
+            # Get GPX filename (without extension)
             gpx_basename = os.path.splitext(os.path.basename(gpx_file_path))[0]
-            # 设置导出路径为：GPX目录/GPX文件名（不含扩展名）
+            # Set export path to: GPX directory/GPX filename (no extension)
             exportPath = os.path.join(gpx_dir, gpx_basename)
-            print(f"使用默认导出路径: {exportPath}")
+            print(f"Using default export path: {exportPath}")
     
     global shape
     shape = (bpy.context.scene.tp3d.shape)
@@ -5639,25 +5639,25 @@ def runGeneration(type):
     if type == 0 or type == 4:
         
         if not gpx_file_path or gpx_file_path == "":
-            show_message_box("文件路径为空！请选择一个有效的文件。")
+            show_message_box("File path is empty! Please select a valid file.")
             toggle_console()
             return
         import os
         if not os.path.isfile(gpx_file_path):
-            show_message_box(f"无效的文件路径：{gpx_file_path}。请选择一个有效的文件。")
+            show_message_box(f"Invalid file path: {gpx_file_path}. Please select a valid file.")
             toggle_console()
             return
         gpx_file_path = bpy.path.abspath(gpx_file_path)
 
         file_extension = os.path.splitext(gpx_file_path)[1].lower()
         if file_extension != '.gpx' and file_extension != ".igc":
-            show_message_box(f"无效的文件格式。请使用 .GPX 或 .IGC 文件")
+            show_message_box(f"Invalid file format. Please use .GPX or .IGC files")
             toggle_console()
             return
     
     if type == 1:
         if not gpx_chain_path or gpx_chain_path == "":
-            show_message_box("链式路径为空！请选择一个有效的文件夹。")
+            show_message_box("Chain path is empty! Please select a valid folder.")
             toggle_console()
             return
         gpx_chain_path = bpy.path.abspath(gpx_chain_path)
@@ -5668,35 +5668,35 @@ def runGeneration(type):
         #check if inputs are valid
         pass
     if exportPath == None:
-        show_message_box("导出路径不能为空")
+        show_message_box("Export path cannot be empty")
         toggle_console()
         return
     
     exportPath = bpy.path.abspath(exportPath)
 
     if not exportPath or exportPath == "":
-        show_message_box("导出路径为空！请选择一个有效的文件夹。")
+        show_message_box("Export path is empty! Please select a valid folder.")
         toggle_console()
         return
     if not os.path.isdir(exportPath):
-        show_message_box(f"无效的导出目录：{exportPath}。请选择一个有效的目录。")
+        show_message_box(f"Invalid export directory: {exportPath}. Please select a valid directory.")
         toggle_console()
         return
 
 
-    # 如果用户未指定字体路径，自动查找系统中文字体
+    # If user did not specify font path, auto-find system font
     if textFont == "":
         textFont = get_chinese_font()
         
-        # 如果没有找到中文字体，使用系统默认英文字体作为备用
+        # If no font found, use default system font as fallback
         if textFont == "":
             if platform.system() == "Windows":
-                textFont = "C:/WINDOWS/FONTS/ariblk.ttf"  # Windows默认粗体
+                textFont = "C:/WINDOWS/FONTS/ariblk.ttf"  # Windows default bold
             elif platform.system() == "Darwin":
-                textFont = "/System/Library/Fonts/Supplemental/Arial Black.ttf"  # macOS默认粗体
+                textFont = "/System/Library/Fonts/Supplemental/Arial Black.ttf"  # macOS default bold
             else:
-                textFont = ""  # Linux使用Blender内置字体
-                #show_message_box(f"请在形状设置选项卡中选择字体。")
+                textFont = ""  # Linux uses Blender built-in font
+                #show_message_box(f"Please select a font in shape settings tab.")
                 #toggle_console()
                 #return
         
@@ -5771,7 +5771,7 @@ def runGeneration(type):
             separate_paths.append([(jMapLat2,jMapLon2,0,0)])
     #except Exception as e:
     else:
-        show_message_box(f"读取GPX文件时出错。类型：{type}")
+        show_message_box(f"Error reading GPX file. Type: {type}")
         return
     coordinates = [item for sublist in separate_paths for item in sublist]
     #coordinates = separate_paths
@@ -5867,7 +5867,7 @@ def runGeneration(type):
                 else:
                     tempcoordinates = get_elevation_path_openTopoData(coordinates2)
         except Exception as e:
-            show_message_box("尝试覆盖路径时API响应错误。这种情况偶尔会发生")
+            show_message_box("API response error while overwriting path. This occasionally happens")
             return
         '''
     
@@ -5981,14 +5981,14 @@ def runGeneration(type):
     bpy.ops.object.transform_apply(location = False, rotation = True, scale = True)
     tileVerts, diff = get_tile_elevation(MapObject)
     
-    # 调试信息：显示网格顶点数和海拔数据数量
+    # Debug info: show mesh vertex count and elevation data count
     mesh_vert_count = len(MapObject.data.vertices)
-    print(f"调试: 网格顶点数={mesh_vert_count}, 海拔数据数={len(tileVerts)}")
+    print(f"Debug: mesh vertices={mesh_vert_count}, elevation data={len(tileVerts)}")
     if mesh_vert_count != len(tileVerts):
-        print(f"⚠️  警告: 数量不匹配! 差异={mesh_vert_count - len(tileVerts)}")
+        print(f"Warning: count mismatch! diff={mesh_vert_count - len(tileVerts)}")
 
     if len(tileVerts) < 2000:
-            show_message_box(f"网格只有{len(tileVerts)}个点。增加细分数量以提高分辨率", "INFO", "信息")
+            show_message_box(f"Mesh only has {len(tileVerts)} points. Increase subdivisions for higher resolution", "INFO", "Info")
     
     if fixedElevationScale == True:
         if diff > 0:
@@ -6005,9 +6005,9 @@ def runGeneration(type):
     if fixedElevationScale == False:
         if diff == 0:
             pass
-            show_message_box("地形似乎非常平坦。该区域可能没有海拔数据。请尝试不同的API或数据集", "INFO", "信息")
+            show_message_box("Terrain appears very flat. Area may lack elevation data. Try different API or dataset", "INFO", "Info")
         elif (diff/1000) * autoScale * scaleElevation < 2 :
-            show_message_box("地形似乎较为平坦。增加海拔缩放可能会有所帮助", "INFO", "信息")
+            show_message_box("Terrain appears fairly flat. Increasing elevation scale may help", "INFO", "Info")
 
     
     #RECALCULATE THE COORDS WITH AUTOSCALE APPLIED
@@ -6054,7 +6054,7 @@ def runGeneration(type):
                 bpy.ops.object.join()
                 curveObj = bpy.context.view_layer.objects.active
     except Exception as e:
-        show_message_box("创建曲线时API响应错误。如果持续发生请联系开发者")
+        show_message_box("API response error while creating curve. Contact developer if persists")
         return
     
     
@@ -6069,23 +6069,23 @@ def runGeneration(type):
     lowestZ = 1000
     highestZ = 0
     
-    # 添加边界检查：确保 tileVerts 和 mesh.vertices 数量匹配
+    # Add bounds check: ensure tileVerts and mesh.vertices count match
     if len(tileVerts) != len(mesh.vertices):
-        print(f"警告: tileVerts 长度 ({len(tileVerts)}) 与顶点数量 ({len(mesh.vertices)}) 不匹配!")
-        show_message_box(f"海拔数据不匹配！预期{len(mesh.vertices)}个点但获得{len(tileVerts)}个。请尝试降低分辨率或重新生成。", "ERROR", "错误")
-        # 使用安全的索引访问
+        print(f"Warning: tileVerts length ({len(tileVerts)}) does not match vertex count ({len(mesh.vertices)})!")
+        show_message_box(f"Elevation data mismatch! Expected {len(mesh.vertices)} points but got {len(tileVerts)}. Try lower resolution or regenerate.", "ERROR", "Error")
+        # Use safe index access
         for i, vert in enumerate(mesh.vertices):
             if i < len(tileVerts):
                 vert.co.z = (tileVerts[i] - elevationOffset)/1000 * scaleElevation * autoScale
             else:
-                # 超出范围的顶点使用最后一个已知海拔值
+                # Out of range vertices use last known elevation
                 vert.co.z = (tileVerts[-1] - elevationOffset)/1000 * scaleElevation * autoScale
             if vert.co.z < lowestZ:
                 lowestZ = vert.co.z
             if vert.co.z > highestZ:
                 highestZ = vert.co.z
     else:
-        # 正常情况：长度匹配
+        # Normal case: lengths match
         for i, vert in enumerate(mesh.vertices):
             vert.co.z = (tileVerts[i] - elevationOffset)/1000 * scaleElevation * autoScale
             if vert.co.z < lowestZ:
@@ -6098,8 +6098,8 @@ def runGeneration(type):
 
     bpy.context.scene.tp3d["sAdditionalExtrusion"] = additionalExtrusion
     
-    # 修复网格中的异常点
-    print("正在修复网格异常点...")
+    # Fix anomaly points in mesh
+    print("Fixing mesh anomaly points...")
     fix_mesh_anomalies(MapObject, threshold=0.1)
     
     #Raycast the curve points onto the Mesh surface
@@ -6188,7 +6188,7 @@ def runGeneration(type):
         #BottomText()
 
 
-    #PLATESHAPE INSERT - 必须在单色模式之前执行，以避免底板包含路径信息
+    #PLATESHAPE INSERT - Must execute before single color mode to avoid plate containing path info
     dist = bpy.context.scene.tp3d.plateInsertValue
     if dist > 0:
         if shape == "HEXAGON OUTER TEXT" or shape == "OCTAGON OUTER TEXT" or shape == "HEXAGON FRONT TEXT":
@@ -6198,47 +6198,47 @@ def runGeneration(type):
             text.location.z += dist
 
 
-    #SINGLE COLOR MODE - 在底板生成之后执行，这样路径合并到地图时不会影响底板
+    #SINGLE COLOR MODE - Execute after plate generation so path merge does not affect plate
     if singleColorMode == 1 and curveObj:
         single_color_mode(curveObj,obj.name)
     
     
-    #ADD FLAGS AT PATH ENDPOINTS - 在路径起点和终点添加旗帜标记
+    #ADD FLAGS AT PATH ENDPOINTS - Add flag markers at path start and end
     addFlags = bpy.context.scene.tp3d.get("addFlags", False)
     if addFlags and curveObj:
         print(" ")
         print("------------------------------------------------")
-        print("添加旗帜标记")
+        print("Adding flag markers")
         print("------------------------------------------------")
         
         flagHeight = bpy.context.scene.tp3d.get("flagHeight", 5.0)
         flagWidth = bpy.context.scene.tp3d.get("flagWidth", 3.0)
         
         try:
-            # 查找路径的起点和终点
+            # Find path start and end points
             start_point, end_point = find_path_endpoints(curveObj)
             
             if start_point and end_point:
-                # 在起点创建起点旗帜（绿色）
+                # Create start flag at start point (green)
                 start_flag = create_flag(name + "_StartFlag", start_point, "START", flagHeight, flagWidth)
                 if start_flag:
-                    print(f"✓ 起点旗帜已创建于路径起点: ({start_point[0]:.2f}, {start_point[1]:.2f}, {start_point[2]:.2f})")
-                    # 导出STL
+                    print(f"Start flag created at path start: ({start_point[0]:.2f}, {start_point[1]:.2f}, {start_point[2]:.2f})")
+                    # Export STL
                     export_to_STL(start_flag)
                 
-                # 在终点创建终点旗帜（红色）
+                # Create finish flag at end point (red)
                 finish_flag = create_flag(name + "_FinishFlag", end_point, "FINISH", flagHeight, flagWidth)
                 if finish_flag:
-                    print(f"✓ 终点旗帜已创建于路径终点: ({end_point[0]:.2f}, {end_point[1]:.2f}, {end_point[2]:.2f})")
-                    # 导出STL
+                    print(f"Finish flag created at path end: ({end_point[0]:.2f}, {end_point[1]:.2f}, {end_point[2]:.2f})")
+                    # Export STL
                     export_to_STL(finish_flag)
                 
-                print("✓ 旗帜标记添加完成")
+                print("Flag markers added successfully")
             else:
-                print("⚠️  警告: 无法找到路径端点")
+                print("Warning: Could not find path endpoints")
                 
         except Exception as e:
-            print(f"⚠️  创建旗帜时出错: {str(e)}")
+            print(f"Error creating flags: {str(e)}")
             import traceback
             traceback.print_exc()
     
