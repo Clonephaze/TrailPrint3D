@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+id = "TrailPrint3D"
+version = "3.1.0"
+name = "TrailPrint3D"
+tagline = "Create 3D printable terrain models from GPS tracks"
+maintainer = "Badriram"
+type = "add-on"
+tags = ["Modeling", "Mesh", "Pipeline"]
+blender_version_min = "4.5.2"
+license = [
+  "SPDX:GPL-3.0-or-later", # Change this to the license you want to use, e.g., "SPDX:MIT", "SPDX:GPL-3.0-only", etc. If you want to upload this to the official Blender Add-ons platform, you must use the already used license. 
+]
+[permissions]
+files = "For Import/Export of files"
