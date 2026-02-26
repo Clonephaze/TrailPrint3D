@@ -6,6 +6,7 @@ import bpy  # type: ignore
 from ..metadata import write_metadata
 from ..text.base import BottomText
 from ..utils import show_message_box
+from .helpers import find_map_objects, find_plate_objects
 
 
 class TP3D_OT_BottomMark(bpy.types.Operator):
@@ -14,30 +15,21 @@ class TP3D_OT_BottomMark(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        selected = context.selected_objects
-        if not selected:
-            show_message_box("No object selected")
+        targets = find_plate_objects()
+        if not targets:
+            show_message_box("No map or plate object found. Generate a terrain first.")
             return {'CANCELLED'}
 
         bpy.ops.object.select_all(action='DESELECT')
-        for o in selected:
-            o.select_set(False)
 
-        generated = False
-        for zobj in selected:
-            if zobj.type == 'MESH' and "objSize" in zobj:
-                zobj.select_set(True)
-                bpy.context.view_layer.objects.active = zobj
-                BottomText(zobj)
-                generated = True
-                bpy.ops.object.select_all(action='DESELECT')
-                zobj.select_set(False)
+        for zobj in targets:
+            zobj.select_set(True)
+            bpy.context.view_layer.objects.active = zobj
+            BottomText(zobj)
+            bpy.ops.object.select_all(action='DESELECT')
 
-        if not generated:
-            show_message_box("No map object found in selection")
-
-        bpy.context.view_layer.objects.active = selected[0]
-        for o in selected:
+        bpy.context.view_layer.objects.active = targets[0]
+        for o in targets:
             o.select_set(True)
         return {'FINISHED'}
 
@@ -49,49 +41,61 @@ class TP3D_OT_ColorMountain(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        selected = bpy.context.selected_objects
-        min_treshold = bpy.context.scene.tp3d.mountain_treshold
+        import numpy as np
 
-        if not selected:
-            show_message_box("No Object Selected. Please select a Map first")
+        map_objs = find_map_objects()
+        threshold_pct = bpy.context.scene.tp3d.mountain_treshold
+
+        if not map_objs:
+            show_message_box("No map object found. Generate a terrain first.")
             return {'CANCELLED'}
 
-        min_z = max_z = minThickness = None
-        for obj in selected:
-            if "lowestZ" in obj and "highestZ" in obj and obj["highestZ"] != 0:
-                low, high = obj["lowestZ"], obj["highestZ"]
-                minThickness = obj["minThickness"]
-                min_z = low if min_z is None else min(min_z, low)
-                max_z = high if max_z is None else max(max_z, high)
-
+        # Ensure MOUNTAIN material exists
+        from ..materials import create_material, MATERIAL_COLORS
         mat = bpy.data.materials.get("MOUNTAIN")
+        if mat is None:
+            mat = create_material("MOUNTAIN", MATERIAL_COLORS["MOUNTAIN"])
 
-        for obj in selected:
-            if obj.type != 'MESH' or obj.get("Object type") != "MAP" or max_z is None or max_z == 0:
+        colored_any = False
+        for obj in map_objs:
+
+            mesh = obj.data
+
+            # Compute Z bounds from actual vertex positions (post-shift)
+            n_verts = len(mesh.vertices)
+            co_arr = np.empty(n_verts * 3, dtype=np.float64)
+            mesh.vertices.foreach_get("co", co_arr)
+            z_vals = co_arr[2::3]
+            min_z = float(z_vals.min())
+            max_z = float(z_vals.max())
+
+            if max_z <= min_z:
                 continue
+
+            tres = min_z + (max_z - min_z) * threshold_pct / 100.0
 
             bpy.context.view_layer.objects.active = obj
             bpy.ops.object.mode_set(mode='EDIT')
-            bm = bmesh.from_edit_mesh(obj.data)
+            bm = bmesh.from_edit_mesh(mesh)
 
-            matG_index = obj.data.materials.find("BASE")
-            mat_index = obj.data.materials.find("MOUNTAIN")
-            if mat_index == -1:
-                obj.data.materials.append(mat)
-                mat_index = len(obj.data.materials) - 1
+            base_idx = mesh.materials.find("BASE")
+            mtn_idx = mesh.materials.find("MOUNTAIN")
+            if mtn_idx == -1:
+                mesh.materials.append(mat)
+                mtn_idx = len(mesh.materials) - 1
 
-            tres = (max_z - min_z) / 100 * min_treshold + minThickness
             for face in bm.faces:
                 if abs(face.normal.z) < 0.02:
                     continue
                 avg_z = sum(v.co.z for v in face.verts) / len(face.verts)
-                if avg_z > tres and face.material_index == matG_index:
-                    face.material_index = mat_index
-                elif avg_z < tres and face.material_index == mat_index:
-                    face.material_index = matG_index
+                if avg_z > tres and face.material_index == base_idx:
+                    face.material_index = mtn_idx
+                elif avg_z <= tres and face.material_index == mtn_idx:
+                    face.material_index = base_idx
 
-            bmesh.update_edit_mesh(obj.data)
+            bmesh.update_edit_mesh(mesh)
             bpy.ops.object.mode_set(mode='OBJECT')
+            colored_any = True
 
         return {'FINISHED'}
 
@@ -102,20 +106,21 @@ class TP3D_OT_ContourLines(bpy.types.Operator):
     bl_description = "Generate contour lines on the map"
 
     def execute(self, context):
-        selected = bpy.context.selected_objects
+        map_objs = find_map_objects()
         tp = bpy.context.scene.tp3d
         cl_thickness = tp.cl_thickness
         cl_distance = tp.cl_distance
         cl_offset = tp.cl_offset
         size = tp.objSize
 
-        if not selected:
-            show_message_box("No object selected. Please select a map object first")
+        if not map_objs:
+            show_message_box("No map object found. Generate a terrain first.")
             return {'CANCELLED'}
 
-        for obj in selected:
-            if "Object type" not in obj or obj["Object type"] != "MAP":
-                continue
+        # Small Z lift so contour geometry doesn't overlap the terrain surface
+        CONTOUR_Z_OFFSET = 0.05
+
+        for obj in map_objs:
 
             # Delete existing contour lines owned by this map
             for o in list(bpy.context.scene.objects):
@@ -153,7 +158,10 @@ class TP3D_OT_ContourLines(bpy.types.Operator):
             bmod.object = obj
 
             plane.name = obj.name + "_LINES"
+            from ..materials import create_material, MATERIAL_COLORS
             mat = bpy.data.materials.get("WHITE")
+            if mat is None:
+                mat = create_material("WHITE", MATERIAL_COLORS["WHITE"])
             plane.data.materials.clear()
             plane.data.materials.append(mat)
             write_metadata(plane, type="LINES")
@@ -162,10 +170,13 @@ class TP3D_OT_ContourLines(bpy.types.Operator):
             bpy.context.view_layer.objects.active = plane
             bpy.ops.object.modifier_apply(modifier=bmod.name)
 
+            # Lift contour lines slightly above terrain to prevent Z-fighting
+            plane.location.z += CONTOUR_Z_OFFSET
+
         bpy.ops.object.select_all(action='DESELECT')
-        for obj in selected:
+        for obj in map_objs:
             obj.select_set(True)
-        bpy.context.view_layer.objects.active = selected[0]
+        bpy.context.view_layer.objects.active = map_objs[0]
         return {'FINISHED'}
 
 

@@ -8,6 +8,7 @@ from mathutils import Euler, Vector  # type: ignore
 
 from ..geometry.mesh_utils import selectBottomFaces, selectTopFaces
 from ..utils import show_message_box
+from .helpers import find_map_objects, find_generation_objects, find_plate_objects
 
 
 class TP3D_OT_Rescale(bpy.types.Operator):
@@ -18,7 +19,10 @@ class TP3D_OT_Rescale(bpy.types.Operator):
 
     def execute(self, context):
         multiZ = bpy.context.scene.tp3d.get('rescaleMultiplier', 1)
-        selected = [o for o in bpy.context.selected_objects if o.type in {'MESH', 'CURVE'}]
+        selected = find_generation_objects()
+        if not selected:
+            show_message_box("No map objects found. Generate a terrain first.")
+            return {'CANCELLED'}
         lowestZ = 1000
 
         for obj in selected:
@@ -66,19 +70,18 @@ class TP3D_OT_Thicken(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        selected = context.selected_objects
+        all_objs = find_generation_objects()
+        map_objs = [o for o in all_objs if o.get("Object type") == "MAP"]
         val = bpy.context.scene.tp3d.thickenValue
+
+        if not map_objs:
+            show_message_box("No map object found. Generate a terrain first.")
+            return {'CANCELLED'}
 
         bpy.context.tool_settings.mesh_select_mode = (False, False, True)
         bpy.ops.object.select_all(action='DESELECT')
-        for o in selected:
-            o.select_set(False)
 
-        if not selected:
-            show_message_box("No object selected.")
-            return {'CANCELLED'}
-
-        for zobj in selected:
+        for zobj in all_objs:
             ot = zobj.get("Object type")
             if ot in ("TRAIL", "WATER", "FOREST", "CITY"):
                 zobj.location.z += val
@@ -100,8 +103,8 @@ class TP3D_OT_Thicken(bpy.types.Operator):
                 zobj.select_set(False)
                 zobj["minThickness"] += val
 
-        bpy.context.view_layer.objects.active = selected[0]
-        for o in selected:
+        bpy.context.view_layer.objects.active = map_objs[0]
+        for o in all_objs:
             o.select_set(True)
         return {'FINISHED'}
 
@@ -112,16 +115,14 @@ class TP3D_OT_MagnetHoles(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        selected = context.selected_objects
-        if not selected:
-            show_message_box("No object selected")
+        targets = find_plate_objects()
+        if not targets:
+            show_message_box("No map or plate object found. Generate a terrain first.")
             return {'CANCELLED'}
 
         bpy.ops.object.select_all(action='DESELECT')
-        for o in selected:
-            o.select_set(False)
 
-        for zobj in selected:
+        for zobj in targets:
             if zobj.type != 'MESH':
                 continue
 
@@ -169,10 +170,9 @@ class TP3D_OT_MagnetHoles(bpy.types.Operator):
             zobj["MagnetHoles"] = True
 
             bpy.ops.object.select_all(action='DESELECT')
-            zobj.select_set(False)
 
-        bpy.context.view_layer.objects.active = selected[0]
-        for o in selected:
+        bpy.context.view_layer.objects.active = targets[0]
+        for o in targets:
             o.select_set(True)
         return {'FINISHED'}
 
@@ -183,24 +183,22 @@ class TP3D_OT_Dovetail(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        selected = context.selected_objects
-        if not selected:
-            show_message_box("No object selected")
+        targets = find_plate_objects()
+        if not targets:
+            show_message_box("No map or plate object found. Generate a terrain first.")
             return {'CANCELLED'}
 
         bpy.ops.object.select_all(action='DESELECT')
-        for o in selected:
-            o.select_set(False)
 
-        for zobj in selected:
+        for zobj in targets:
             if zobj.type != 'MESH':
                 continue
-            if "objSize" not in zobj:
+            obj_size = zobj.get("objSize")
+            if obj_size is None:
                 continue
 
             zobj.select_set(True)
             bpy.context.view_layer.objects.active = zobj
-            obj_size = zobj["objSize"]
 
             dovetailSize = 15
             if obj_size <= 50:
@@ -262,9 +260,8 @@ class TP3D_OT_Dovetail(bpy.types.Operator):
             bpy.data.objects.remove(merged, do_unlink=True)
 
             bpy.ops.object.select_all(action='DESELECT')
-            zobj.select_set(False)
 
-        bpy.context.view_layer.objects.active = selected[0]
-        for o in selected:
+        bpy.context.view_layer.objects.active = targets[0]
+        for o in targets:
             o.select_set(True)
         return {'FINISHED'}
