@@ -1,57 +1,34 @@
-"""Main generation panel."""
+"""Generate sub-panel — GPX input, shape, and generate button."""
 
 import bpy  # type: ignore
 
-from ..export_3mf import is_3mf_available
 
-
-class MY_PT_Generate(bpy.types.Panel):
-    bl_label = "Create"
-    bl_idname = "TP3D_PT_Generate"
+class TP3D_PT_generate(bpy.types.Panel):
+    bl_label = "Generate"
+    bl_idname = "TP3D_PT_generate"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "TrailPrint3D"
+    bl_parent_id = "TP3D_PT_main"
+    bl_options = set()
 
     def draw(self, context):
         layout = self.layout
         props = context.scene.tp3d
 
+        layout.prop(props, "file_path")
+        layout.prop(props, "trailName")
+        layout.prop(props, "shape")
+
         layout.separator()
-        layout.label(text="Create File")
-        layout.operator("wm.run_my_script")
 
-        box = layout.box()
-        box.prop(props, "file_path")
-        box.prop(props, "export_path")
-
-        # Auto-export toggles on one row
-        row = box.row(align=True)
+        from ..export_3mf import is_3mf_available
+        row = layout.row(align=True)
         row.prop(props, "autoExport")
         if is_3mf_available():
             row.prop(props, "auto3mfExport")
 
-        box.prop(props, "trailName")
-        box.prop(props, "shape")
-        box.separator()
-        box.prop(props, "objSize")
-        box.prop(props, "num_subdivisions")
-        box.prop(props, "scaleElevation")
-        box.prop(props, "pathThickness")
-        box.prop(props, "scalemode")
+        layout.operator("tp3d.generate", icon='PLAY')
 
-        if props.scalemode == "FACTOR":
-            box.prop(props, "pathScale")
-        elif props.scalemode == "COORDINATES":
-            row = box.row()
-            row.prop(props, "scaleLat1")
-            row.prop(props, "scaleLon1")
-            row = box.row()
-            row.prop(props, "scaleLat2")
-            row.prop(props, "scaleLon2")
-        elif props.scalemode == "SCALE":
-            box.prop(props, "pathScale")
-
-        box.prop(props, "overwritePathElevation")
-
-        layout.label(text=props.o_time)
-        layout.label(text="------------------------------")
+        if props.o_time:
+            layout.label(text=props.o_time)

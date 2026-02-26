@@ -10,8 +10,8 @@ from ..geometry.mesh_utils import selectBottomFaces, selectTopFaces
 from ..utils import show_message_box
 
 
-class MY_OT_Rescale(bpy.types.Operator):
-    bl_idname = "wm.rescale"
+class TP3D_OT_Rescale(bpy.types.Operator):
+    bl_idname = "tp3d.rescale"
     bl_label = "Scale Z Height"
     bl_description = "Rescale elevation height of currently selected object"
     bl_options = {'REGISTER', 'UNDO'}
@@ -59,8 +59,8 @@ class MY_OT_Rescale(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MY_OT_thicken(bpy.types.Operator):
-    bl_idname = "wm.thicken"
+class TP3D_OT_Thicken(bpy.types.Operator):
+    bl_idname = "tp3d.thicken"
     bl_label = "Thicken Map"
     bl_description = "Increase thickness of selected map"
     bl_options = {'REGISTER', 'UNDO'}
@@ -106,8 +106,8 @@ class MY_OT_thicken(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MY_OT_MagnetHoles(bpy.types.Operator):
-    bl_idname = "wm.magnetholes"
+class TP3D_OT_MagnetHoles(bpy.types.Operator):
+    bl_idname = "tp3d.magnet_holes"
     bl_label = "Magnet Holes"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -177,8 +177,8 @@ class MY_OT_MagnetHoles(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MY_OT_Dovetail(bpy.types.Operator):
-    bl_idname = "wm.dovetail"
+class TP3D_OT_Dovetail(bpy.types.Operator):
+    bl_idname = "tp3d.dovetail"
     bl_label = "Dovetail Joints"
     bl_options = {'REGISTER', 'UNDO'}
 

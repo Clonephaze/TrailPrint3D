@@ -11,25 +11,6 @@ import bpy  # type: ignore
 specialCollection = [("----", "----", "")]
 
 
-def shape_callback(self, context):
-    """Register/unregister the Shapes panel when a text-based shape is selected."""
-    from .panels import MY_PT_Shapes
-    text_shapes = {
-        "HEXAGON INNER TEXT", "HEXAGON OUTER TEXT",
-        "OCTAGON OUTER TEXT", "HEXAGON FRONT TEXT",
-    }
-    if self.shape in text_shapes:
-        try:
-            bpy.utils.register_class(MY_PT_Shapes)
-        except RuntimeError:
-            pass
-    else:
-        try:
-            bpy.utils.unregister_class(MY_PT_Shapes)
-        except RuntimeError:
-            pass
-
-
 def get_external_collections(path):
     """Return list of collection names inside a .blend file."""
     if not os.path.exists(path):
@@ -103,7 +84,6 @@ class MyProperties(bpy.types.PropertyGroup):
             ("HEXAGON FRONT TEXT", "Hexagon Front Text", "Hexagon map with backplate and front text"),
         ],
         default="HEXAGON OUTER TEXT",
-        update=shape_callback,
     )  # type: ignore
 
     # --- Elevation API ---
@@ -132,15 +112,15 @@ class MyProperties(bpy.types.PropertyGroup):
 
     # --- Scale mode ---
     scalemode: bpy.props.EnumProperty(
-        name="scalemode",
+        name="Scale Mode",
         items=[
-            ('FACTOR', "Map Scale", "Set a scale based on the Map size"),
-            ('COORDINATES', "Coordinates", "Calculate the scale by using 2 Coordinates (Lat/lon)"),
-            ('SCALE', "Global Scale", "Set a scale based on the Global Scale (Mercator Projection)"),
+            ('FACTOR', "Fit to Shape", "Scale the trail to fill a percentage of the terrain shape. 0.8 = trail fills 80%"),
+            ('COORDINATES', "Match GPS Points", "Set scale so two GPS coordinates are geographically accurate on the model"),
+            ('SCALE', "Fixed Scale", "Use a fixed scale factor — useful for making multiple models at the same geographic scale"),
         ],
         default='FACTOR',
     )  # type: ignore
-    pathScale: bpy.props.FloatProperty(name="Path Scale", default=0.8, min=0.01, max=200, description="Path scale relative to map size/global scale (depends on scale mode)")  # type: ignore
+    pathScale: bpy.props.FloatProperty(name="Scale Factor", default=0.8, min=0.01, max=200, description="In Fit to Shape mode: how much of the shape the trail fills (0.8 = 80%). In Fixed Scale mode: raw Mercator scale multiplier")  # type: ignore
     scaleLon1: bpy.props.FloatProperty(name="Longitude 1", default=0, description="Longitude of first coordinate")  # type: ignore
     scaleLat1: bpy.props.FloatProperty(name="Latitude 1", default=0, description="Latitude of first coordinate")  # type: ignore
     scaleLon2: bpy.props.FloatProperty(name="Longitude 2", default=0, description="Longitude of second coordinate")  # type: ignore
@@ -154,7 +134,7 @@ class MyProperties(bpy.types.PropertyGroup):
     scaleElevation: bpy.props.FloatProperty(name="Elevation Scale", default=2, min=0, max=10000, description="Multiplier for elevation")  # type: ignore
     pathThickness: bpy.props.FloatProperty(name="Path Thickness", default=1.2, min=0.1, max=5, description="Thickness of the path in millimeters")  # type: ignore
     shapeRotation: bpy.props.IntProperty(name="Shape Rotation", default=0, min=-360, max=360, description="Rotation angle of the shape")  # type: ignore
-    overwritePathElevation: bpy.props.BoolProperty(name="Overwrite Path Elevation", default=True, description="Project each point of the path onto the terrain mesh")  # type: ignore
+    overwritePathElevation: bpy.props.BoolProperty(name="Snap Trail to Terrain", default=True, description="Project the trail onto the terrain surface via raycast. When off the trail uses raw GPS elevation")  # type: ignore
 
     # --- Output info strings ---
     o_verticesPath: bpy.props.StringProperty(name="Path Vertices", default="")  # type: ignore
@@ -191,9 +171,9 @@ class MyProperties(bpy.types.PropertyGroup):
 
     rescaleMultiplier: bpy.props.FloatProperty(name="Scale Multiplier", default=1, min=0, max=10000, description="Multiplier for elevation rescaling")  # type: ignore
     thickenValue: bpy.props.FloatProperty(name="Thicken Value", default=1, description="Add specified thickness to map in millimeters")  # type: ignore
-    fixedElevationScale: bpy.props.BoolProperty(name="Fixed Elevation Height", default=False, description="Cap terrain height to a fixed range (recommended for 3D printing). Uncheck for true-to-scale vertical proportions")  # type: ignore
-    singleColorMode: bpy.props.BoolProperty(name="Single Color Mode", default=True, description="For single-color 3D printers, merge all parts into one object")  # type: ignore
-    tolerance: bpy.props.FloatProperty(name="Path Tolerance", default=0.2, description="Tolerance for path-terrain blending in single color mode")  # type: ignore
+    fixedElevationScale: bpy.props.BoolProperty(name="Normalize Elevation Range", default=False, description="Normalize terrain range so that the tallest peak is 10mm(xElevationScale) above the lowest point regardless of real elevation range. Recommended for 3D printing.")  # type: ignore
+    singleColorMode: bpy.props.BoolProperty(name="Cut Trail into Terrain", default=True, description="Cut the trail into the terrain as one solid object. When off, trail stays as a curve on top of the terrain.")  # type: ignore
+    tolerance: bpy.props.FloatProperty(name="Cut Offset", default=0.2, description="Extra width added to the groove cut when cutting the trail into the terrain. Increase if the trail doesn't sit flush")  # type: ignore
     disableCache: bpy.props.BoolProperty(name="Disable Cache", default=False, description="Disabling cache may help if mesh has holes or anomalies")  # type: ignore
     ccacheSize: bpy.props.IntProperty(name="Cache Size", default=50000, min=0, description="Maximum entries in elevation data cache")  # type: ignore
 
@@ -224,17 +204,6 @@ class MyProperties(bpy.types.PropertyGroup):
     cl_thickness: bpy.props.FloatProperty(name="Contour Thickness", default=0.2, description="Contour line thickness in millimeters")  # type: ignore
     cl_distance: bpy.props.FloatProperty(name="Contour Spacing", default=2, description="Distance between contour lines")  # type: ignore
     cl_offset: bpy.props.FloatProperty(name="Contour Offset", default=0.0, description="Starting offset for contour lines")  # type: ignore
-
-    # --- UI toggles ---
-    show_stats: bpy.props.BoolProperty(name="Additional Info", default=False)  # type: ignore
-    show_coloring: bpy.props.BoolProperty(name="Include Elements", default=False)  # type: ignore
-    show_chain: bpy.props.BoolProperty(name="Batch Generation", default=False)  # type: ignore
-    show_map: bpy.props.BoolProperty(name="Map Settings", default=False)  # type: ignore
-    show_pin: bpy.props.BoolProperty(name="Pin Markers", default=False)  # type: ignore
-    show_special: bpy.props.BoolProperty(name="Special Features", default=False)  # type: ignore
-    show_postProcess: bpy.props.BoolProperty(name="Post Processing", default=False)  # type: ignore
-    show_api: bpy.props.BoolProperty(name="API Settings", default=False)  # type: ignore
-    show_attribution: bpy.props.BoolProperty(name="Data Attribution", default=False)  # type: ignore
 
     # --- Pin markers ---
     cityname: bpy.props.StringProperty(name="City Name", default="Berlin", description="Get coordinates for city")  # type: ignore

@@ -33,8 +33,8 @@ def _find_generated_objects() -> list:
     return found
 
 
-class MY_OT_ExportSTL(bpy.types.Operator):
-    bl_idname = "wm.run_my_script5"
+class TP3D_OT_Export(bpy.types.Operator):
+    bl_idname = "tp3d.export"
     bl_label = "Export"
     bl_description = "Export generated objects (auto-selects if nothing is selected)"
 
@@ -59,14 +59,12 @@ class MY_OT_ExportSTL(bpy.types.Operator):
 
         # Auto-detect objects if nothing is selected
         selected = list(bpy.context.selected_objects)
-        auto_selected = False
         if not selected:
             selected = _find_generated_objects()
             if not selected:
                 show_message_box("No objects selected and no generated objects found. "
                                  "Please select objects to export.", "ERROR", "Nothing to export")
                 return {'FINISHED'}
-            auto_selected = True
             # Select them so export functions work
             bpy.ops.object.select_all(action='DESELECT')
             for obj in selected:

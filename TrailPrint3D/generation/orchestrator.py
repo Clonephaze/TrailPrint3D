@@ -3,7 +3,7 @@
 The modal operator in ``operators/generation.py`` is the primary entry
 point for single-file generation (with progress overlay and threaded
 elevation fetch).  This module remains as a simpler synchronous path
-used by ``MY_OT_BatchGeneration``.
+used by ``TP3D_OT_BatchGenerate``.
 """
 
 from __future__ import annotations
@@ -36,11 +36,9 @@ def run_generation(gen_type: int = 0) -> None:
     # Build context from scene properties
     ctx = GenerationContext.from_scene(gen_type)
 
-    # Resolve default export path
+    # Resolve default export path — fall back to GPX file's directory
     if not ctx.exportPath and ctx.gpx_file_path:
-        gpx_dir = os.path.dirname(ctx.gpx_file_path)
-        gpx_base = os.path.splitext(os.path.basename(ctx.gpx_file_path))[0]
-        ctx.exportPath = os.path.join(gpx_dir, gpx_base)
+        ctx.exportPath = os.path.dirname(ctx.gpx_file_path)
 
     ctx.exportPath = bpy.path.abspath(ctx.exportPath) if ctx.exportPath else ""
     if ctx.gpx_file_path:

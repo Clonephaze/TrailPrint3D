@@ -1,43 +1,43 @@
 """Operator classes, split by domain."""
 
-from .generation import MY_OT_runGeneration, MY_OT_BatchGeneration
-from .export import MY_OT_ExportSTL
+from .generation import TP3D_OT_Generate, TP3D_OT_BatchGenerate
+from .export import TP3D_OT_Export
 from .post_processing import (
-    MY_OT_Rescale,
-    MY_OT_thicken,
-    MY_OT_MagnetHoles,
-    MY_OT_Dovetail,
+    TP3D_OT_Rescale,
+    TP3D_OT_Thicken,
+    TP3D_OT_MagnetHoles,
+    TP3D_OT_Dovetail,
 )
 from .decorations import (
-    MY_OT_BottomMark,
-    MY_OT_ColorMountain,
-    MY_OT_ContourLines,
-    MY_OT_TerrainDummy,
+    TP3D_OT_BottomMark,
+    TP3D_OT_ColorMountain,
+    TP3D_OT_ContourLines,
+    TP3D_OT_Dummy,
 )
 from .utility import (
-    MY_OT_PinCoords,
-    MY_OT_OpenWebsite,
-    MY_OT_JoinDiscord,
-    OBJECT_OT_ShowCustomPropsPopup,
+    TP3D_OT_PinCoords,
+    TP3D_OT_OpenWebsite,
+    TP3D_OT_JoinDiscord,
+    TP3D_OT_ShowProps,
 )
 
 # Ordered list of all operator classes for register / unregister
 OPERATOR_CLASSES = [
-    MY_OT_runGeneration,
-    MY_OT_BatchGeneration,
-    MY_OT_ExportSTL,
-    MY_OT_Rescale,
-    MY_OT_thicken,
-    MY_OT_MagnetHoles,
-    MY_OT_Dovetail,
-    MY_OT_BottomMark,
-    MY_OT_ColorMountain,
-    MY_OT_ContourLines,
-    MY_OT_TerrainDummy,
-    MY_OT_PinCoords,
-    MY_OT_OpenWebsite,
-    MY_OT_JoinDiscord,
-    OBJECT_OT_ShowCustomPropsPopup,
+    TP3D_OT_Generate,
+    TP3D_OT_BatchGenerate,
+    TP3D_OT_Export,
+    TP3D_OT_Rescale,
+    TP3D_OT_Thicken,
+    TP3D_OT_MagnetHoles,
+    TP3D_OT_Dovetail,
+    TP3D_OT_BottomMark,
+    TP3D_OT_ColorMountain,
+    TP3D_OT_ContourLines,
+    TP3D_OT_Dummy,
+    TP3D_OT_PinCoords,
+    TP3D_OT_OpenWebsite,
+    TP3D_OT_JoinDiscord,
+    TP3D_OT_ShowProps,
 ]
 
 __all__ = [cls.__name__ for cls in OPERATOR_CLASSES] + ["OPERATOR_CLASSES"]

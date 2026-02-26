@@ -54,14 +54,19 @@ def validate_inputs(ctx: GenerationContext, gen_type: int) -> bool:
             toggle_console()
             return False
 
-    # Export path
-    if not ctx.exportPath:
-        show_message_box("Export path cannot be empty")
-        toggle_console()
-        return False
-    if not os.path.isdir(ctx.exportPath):
-        show_message_box(f"Invalid export directory: {ctx.exportPath}. Please select a valid directory.")
-        toggle_console()
-        return False
+    # Export path — only required when auto-export is enabled
+    auto_export = getattr(bpy.context.scene.tp3d, 'autoExport', False)
+    auto_3mf = getattr(bpy.context.scene.tp3d, 'auto3mfExport', False)
+    if auto_export or auto_3mf:
+        if not ctx.exportPath:
+            show_message_box("Auto-export is enabled but export path is empty. "
+                             "Please set an export directory or disable auto-export.")
+            toggle_console()
+            return False
+        if not os.path.isdir(ctx.exportPath):
+            show_message_box(f"Invalid export directory: {ctx.exportPath}. "
+                             "Please select a valid directory.")
+            toggle_console()
+            return False
 
     return True

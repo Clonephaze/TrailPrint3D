@@ -8,8 +8,8 @@ from ..text.base import BottomText
 from ..utils import show_message_box
 
 
-class MY_OT_BottomMark(bpy.types.Operator):
-    bl_idname = "wm.bottommark"
+class TP3D_OT_BottomMark(bpy.types.Operator):
+    bl_idname = "tp3d.bottom_mark"
     bl_label = "Bottom Mark"
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -42,8 +42,8 @@ class MY_OT_BottomMark(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MY_OT_ColorMountain(bpy.types.Operator):
-    bl_idname = "wm.colormountain"
+class TP3D_OT_ColorMountain(bpy.types.Operator):
+    bl_idname = "tp3d.color_mountain"
     bl_label = "Color Mountains"
     bl_description = "Add color to mountain areas above specified threshold height"
     bl_options = {'REGISTER', 'UNDO'}
@@ -96,8 +96,8 @@ class MY_OT_ColorMountain(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MY_OT_ContourLines(bpy.types.Operator):
-    bl_idname = "wm.contourlines"
+class TP3D_OT_ContourLines(bpy.types.Operator):
+    bl_idname = "tp3d.contour_lines"
     bl_label = "Contour Lines"
     bl_description = "Generate contour lines on the map"
 
@@ -169,8 +169,8 @@ class MY_OT_ContourLines(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MY_OT_TerrainDummy(bpy.types.Operator):
-    bl_idname = "wm.dummy"
+class TP3D_OT_Dummy(bpy.types.Operator):
+    bl_idname = "tp3d.dummy"
     bl_label = "Placeholder Operator"
     bl_description = "This feature is now fully unlocked"
 

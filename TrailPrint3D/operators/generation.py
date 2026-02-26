@@ -94,10 +94,10 @@ _DONE            = 10
 # ── Modal generation operator ────────────────────────────────────────────
 
 
-class MY_OT_runGeneration(bpy.types.Operator):
+class TP3D_OT_Generate(bpy.types.Operator):
     """Generate a 3D terrain map from GPS data (non-blocking, with progress)."""
 
-    bl_idname = "wm.run_my_script"
+    bl_idname = "tp3d.generate"
     bl_label = "Generate"
     bl_description = "Generate path and map with current settings"
     bl_options = {'REGISTER'}
@@ -118,11 +118,11 @@ class MY_OT_runGeneration(bpy.types.Operator):
     # ── Lifecycle ─────────────────────────────────────────────────────────
 
     def invoke(self, context, event):
-        if MY_OT_runGeneration._is_running:
+        if TP3D_OT_Generate._is_running:
             self.report({'WARNING'}, "Generation already in progress")
             return {'CANCELLED'}
 
-        MY_OT_runGeneration._is_running = True
+        TP3D_OT_Generate._is_running = True
         self._phase = _INIT
         self._ctx = None
         self._start_time = time.time()
@@ -163,11 +163,9 @@ class MY_OT_runGeneration(bpy.types.Operator):
             p.update(percent=0.02, phase="Initializing", message="Reading settings...")
             ctx = GenerationContext.from_scene(self.gen_type)
 
-            # Resolve export path
+            # Resolve export path — fall back to GPX file's directory
             if not ctx.exportPath and ctx.gpx_file_path:
-                d = os.path.dirname(ctx.gpx_file_path)
-                b = os.path.splitext(os.path.basename(ctx.gpx_file_path))[0]
-                ctx.exportPath = os.path.join(d, b)
+                ctx.exportPath = os.path.dirname(ctx.gpx_file_path)
             ctx.exportPath = bpy.path.abspath(ctx.exportPath) if ctx.exportPath else ""
             if ctx.gpx_file_path:
                 ctx.gpx_file_path = bpy.path.abspath(ctx.gpx_file_path)
@@ -314,7 +312,7 @@ class MY_OT_runGeneration(bpy.types.Operator):
     def _finish(self, context):
         ProgressOverlay.get().finish()
         context.window_manager.event_timer_remove(self._timer)
-        MY_OT_runGeneration._is_running = False
+        TP3D_OT_Generate._is_running = False
         bpy.ops.ed.undo_push()
         self.report({'INFO'}, "Generation complete")
         return {'FINISHED'}
@@ -322,7 +320,7 @@ class MY_OT_runGeneration(bpy.types.Operator):
     def _fail(self, context, message: str):
         ProgressOverlay.get().finish()
         context.window_manager.event_timer_remove(self._timer)
-        MY_OT_runGeneration._is_running = False
+        TP3D_OT_Generate._is_running = False
         self.report({'ERROR'}, message)
         return {'CANCELLED'}
 
@@ -339,7 +337,7 @@ class MY_OT_runGeneration(bpy.types.Operator):
 
         ProgressOverlay.get().finish()
         context.window_manager.event_timer_remove(self._timer)
-        MY_OT_runGeneration._is_running = False
+        TP3D_OT_Generate._is_running = False
         self.report({'INFO'}, "Generation cancelled")
         return {'CANCELLED'}
 
@@ -353,8 +351,8 @@ class MY_OT_runGeneration(bpy.types.Operator):
 # ── Batch operator (synchronous, no progress overlay) ────────────────────
 
 
-class MY_OT_BatchGeneration(bpy.types.Operator):
-    bl_idname = "wm.run_my_script2"
+class TP3D_OT_BatchGenerate(bpy.types.Operator):
+    bl_idname = "tp3d.batch_generate"
     bl_label = "Batch Generate"
     bl_description = "Generate single map from multiple GPX files in folder"
     bl_options = {'REGISTER', 'UNDO'}
@@ -366,16 +364,16 @@ class MY_OT_BatchGeneration(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# TODO: The following operator bl_idnames are referenced in the UI panels
+# TODO: The following operators are referenced in the UI panels
 # but were not implemented in the original monolith.  Add stubs or full
 # implementations when the features are wired up:
-#   wm.terrain           — Create map from selected object
-#   wm.create_blank      — Create blank map
-#   wm.extend_tile       — Extend selected tile
-#   wm.fromcentergeneration          — From 1 point + radius
-#   wm.fromcentergenerationwithtrail — From 1 point + radius + trail
-#   wm.2pointgeneration  — From 2 points
-#   wm.mergewithmap      — Merge to map
-#   wm.update_special_collection — Load .blend file
-#   wm.appendcollection  — Import collection
-#   wm.citycoords        — Add pin at city name
+#   tp3d.map_from_plane         — Create map from selected object
+#   tp3d.create_blank           — Create blank map
+#   tp3d.extend_tile            — Extend selected tile
+#   tp3d.map_from_center        — From 1 point + radius
+#   tp3d.map_from_center_trail  — From 1 point + radius + trail
+#   tp3d.map_from_2points       — From 2 points
+#   tp3d.merge_with_map         — Merge to map
+#   tp3d.load_special_blend     — Load .blend file
+#   tp3d.import_special         — Import collection
+#   tp3d.pin_city               — Add pin at city name

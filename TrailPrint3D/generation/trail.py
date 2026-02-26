@@ -42,18 +42,22 @@ def create_trail(ctx: GenerationContext, gen_type: int) -> bool:
     if curveObj is None:
         return True  # type 2/3 may have no trail — that's OK
 
-    # Raycast path onto terrain
+    # Snap trail onto terrain surface, or keep raw GPS elevation
     if ctx.overwritePathElevation:
+        # Raycast projects the curve onto the already-shifted terrain mesh,
+        # so the trail ends up at the correct final Z — no extra shift needed.
         RaycastCurveToMesh(curveObj, ctx.MapObject)
+    else:
+        # Raw GPS Z values are in the pre-shift coordinate system;
+        # apply the same Z translation that was applied to the terrain.
+        effective_thickness = getattr(ctx, 'effectiveThickness', ctx.minThickness)
+        bpy.context.view_layer.objects.active = curveObj
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.curve.select_all(action='SELECT')
+        bpy.ops.transform.translate(value=(0, 0, -ctx.additionalExtrusion + effective_thickness))
+        bpy.ops.object.mode_set(mode='OBJECT')
 
-    # Shift curve Z the same as terrain base
-    effective_thickness = getattr(ctx, 'effectiveThickness', ctx.minThickness)
     bpy.context.view_layer.objects.active = curveObj
-    bpy.ops.object.mode_set(mode='EDIT')
-    bpy.ops.curve.select_all(action='SELECT')
-    bpy.ops.transform.translate(value=(0, 0, -ctx.additionalExtrusion + effective_thickness))
-    bpy.ops.object.mode_set(mode='OBJECT')
-
     curveObj.select_set(True)
     bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
 

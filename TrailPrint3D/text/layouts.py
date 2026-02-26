@@ -228,6 +228,7 @@ def HexagonOuterText(ctx: GenerationContext):
     outerHex.location.z += ctx.plateThickness
 
     _apply_shape_rotation(outerHex, ctx.shapeRotation)
+    _apply_shape_rotation(tName, ctx.shapeRotation)
 
     ctx.plateobj = outerHex
     ctx.textobj = tName
@@ -290,6 +291,7 @@ def HexagonFrontText(ctx: GenerationContext):
     outerHex.location.z += ctx.plateThickness
 
     _apply_shape_rotation(outerHex, ctx.shapeRotation)
+    _apply_shape_rotation(tName, ctx.shapeRotation)
 
     ctx.plateobj = outerHex
     ctx.textobj = tName
@@ -351,6 +353,7 @@ def OctagonOuterText(ctx: GenerationContext):
     outerOct.location.z += ctx.plateThickness
 
     _apply_shape_rotation(outerOct, ctx.shapeRotation)
+    _apply_shape_rotation(tName, ctx.shapeRotation)
 
     ctx.plateobj = outerOct
     ctx.textobj = tName

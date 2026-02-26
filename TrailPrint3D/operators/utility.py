@@ -7,8 +7,8 @@ import bpy  # type: ignore
 from ..coordinates import convert_to_blender_coordinates
 
 
-class MY_OT_PinCoords(bpy.types.Operator):
-    bl_idname = "wm.pincoords"
+class TP3D_OT_PinCoords(bpy.types.Operator):
+    bl_idname = "tp3d.pin_coords"
     bl_label = "Add Coordinate Pin"
     bl_description = "Place a pin marker at specified coordinates"
     bl_options = {'REGISTER', 'UNDO'}
@@ -34,8 +34,8 @@ class MY_OT_PinCoords(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MY_OT_OpenWebsite(bpy.types.Operator):
-    bl_idname = "wm.open_website"
+class TP3D_OT_OpenWebsite(bpy.types.Operator):
+    bl_idname = "tp3d.open_website"
     bl_label = "Visit Project Homepage"
     bl_description = "Visit TrailPrint3D project homepage for more info and support"
 
@@ -44,8 +44,8 @@ class MY_OT_OpenWebsite(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MY_OT_JoinDiscord(bpy.types.Operator):
-    bl_idname = "wm.join_discord"
+class TP3D_OT_JoinDiscord(bpy.types.Operator):
+    bl_idname = "tp3d.join_discord"
     bl_label = "Join Discord"
     bl_description = "TrailPrint3D Discord community!"
 
@@ -54,8 +54,8 @@ class MY_OT_JoinDiscord(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class OBJECT_OT_ShowCustomPropsPopup(bpy.types.Operator):
-    bl_idname = "object.show_custom_props_popup"
+class TP3D_OT_ShowProps(bpy.types.Operator):
+    bl_idname = "tp3d.show_props"
     bl_label = "Generation Parameters"
     bl_description = "Show settings used to generate this object (select map object)"
     bl_options = {'REGISTER'}
