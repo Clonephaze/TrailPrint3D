@@ -5,7 +5,7 @@ import bpy  # type: ignore
 
 class MY_PT_Shapes(bpy.types.Panel):
     bl_label = "Additional Shape Settings"
-    bl_idname = "PT_ShapeSettings"
+    bl_idname = "TP3D_PT_ShapeSettings"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "TrailPrint3D"

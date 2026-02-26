@@ -50,6 +50,9 @@ def create_material(name: str, color: tuple[float, float, float, float]) -> bpy.
         links.new(bsdf.outputs["BSDF"], output.inputs["Surface"])
 
     bsdf.inputs["Base Color"].default_value = color
+
+    # Set viewport display colour so Solid mode shows the right tint
+    mat.diffuse_color = color
     return mat
 
 

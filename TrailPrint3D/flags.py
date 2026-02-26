@@ -85,6 +85,7 @@ def create_flag(name: str, position, flag_type: str = "START",
             bsdf.inputs["Base Color"].default_value = color
             bsdf.inputs["Metallic"].default_value = 0.0
             bsdf.inputs["Roughness"].default_value = 0.5
+        mat.diffuse_color = color
 
     if flag.data.materials:
         flag.data.materials[0] = mat
@@ -100,6 +101,7 @@ def create_flag(name: str, position, flag_type: str = "START",
             bsdf.inputs["Base Color"].default_value = (0.3, 0.3, 0.3, 1.0)
             bsdf.inputs["Metallic"].default_value = 0.8
             bsdf.inputs["Roughness"].default_value = 0.2
+        pole_mat.diffuse_color = (0.3, 0.3, 0.3, 1.0)
 
     for part in (pole, insert_part, base):
         if part.data.materials:

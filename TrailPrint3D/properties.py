@@ -66,8 +66,22 @@ class MyProperties(bpy.types.PropertyGroup):
     )  # type: ignore
     autoExport: bpy.props.BoolProperty(
         name="Auto Export",
-        description="Automatically export objects after generation",
+        description="Automatically export STL/OBJ files after generation",
         default=False,
+    )  # type: ignore
+    auto3mfExport: bpy.props.BoolProperty(
+        name="3MF Export",
+        description="Automatically export a combined 3MF file after generation (requires ThreeMF_io addon)",
+        default=False,
+    )  # type: ignore
+    export_format: bpy.props.EnumProperty(
+        name="Format",
+        description="Export file format for manual export",
+        items=[
+            ("STL_OBJ", "STL / OBJ", "STL for plain meshes, OBJ if materials are present"),
+            ("3MF", "3MF", "3MF file with component hierarchy (requires ThreeMF_io addon)"),
+        ],
+        default="STL_OBJ",
     )  # type: ignore
     chain_path: bpy.props.StringProperty(
         name="Folder Path", description="Select folder containing multiple GPX files",

@@ -294,11 +294,4 @@ def coloring_main(
             bpy.data.objects.remove(merged, do_unlink=True)
             bpy.data.meshes.remove(md)
 
-    # Restore viewport shading
-    for area in bpy.context.screen.areas:
-        if area.type == 'VIEW_3D':
-            for space in area.spaces:
-                if space.type == 'VIEW_3D':
-                    space.shading.type = 'MATERIAL'
-
     bpy.context.preferences.edit.use_global_undo = True

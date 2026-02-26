@@ -2,10 +2,12 @@
 
 import bpy  # type: ignore
 
+from ..export_3mf import is_3mf_available
+
 
 class MY_PT_Advanced(bpy.types.Panel):
     bl_label = "Advanced Options"
-    bl_idname = "PT_Advanced"
+    bl_idname = "TP3D_PT_Advanced"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "TrailPrint3D"
@@ -14,10 +16,14 @@ class MY_PT_Advanced(bpy.types.Panel):
         layout = self.layout
         props = context.scene.tp3d
 
-        # STL Export
+        # Export
         box = layout.box()
-        box.label(text="Manually export selected objects as STL/OBJ")
+        box.label(text="Export generated objects")
+        box.prop(props, "export_format")
+        if props.export_format == '3MF' and not is_3mf_available():
+            box.label(text="Install ThreeMF_io addon for 3MF", icon='ERROR')
         box.operator("wm.run_my_script5")
+        box.label(text="Auto-selects generated objects if nothing is selected", icon='INFO')
 
         # --- Map Settings ---
         layout.prop(props, "show_map", icon="TRIA_DOWN" if props.show_map else "TRIA_RIGHT",

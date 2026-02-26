@@ -215,9 +215,12 @@ def apply_terrain_elevation(ctx: GenerationContext, result: ElevationResult) -> 
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.transform.translate(value=(0, 0, -ctx.additionalExtrusion + effective_thickness))
 
-    # Dissolve coplanar faces while still in edit mode
-    import math as _math
-    bpy.ops.mesh.dissolve_limited(angle_limit=_math.radians(0.5))
+    # Dissolve coplanar faces while still in edit mode — reduces poly count
+    # on flat areas but creates large faces that hurt per-face paint (OSM
+    # overlays, multi-colour 3MF).  Disabled for now; can be re-enabled
+    # behind a property toggle if needed.
+    # import math as _math
+    # bpy.ops.mesh.dissolve_limited(angle_limit=_math.radians(0.5))
     bpy.ops.object.mode_set(mode='OBJECT')
 
     bpy.context.scene.cursor.location = obj.location

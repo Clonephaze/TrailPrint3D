@@ -10,6 +10,7 @@ import bpy  # type: ignore
 
 from ..elevation.counter import load_counter
 from ..export import export_object
+from ..export_3mf import export_as_3mf
 from ..metadata import write_metadata
 from ..osm.coloring import coloring_main
 from ..utils import zoom_camera_to_selected
@@ -36,13 +37,6 @@ def finalize(ctx: GenerationContext, gen_type: int, start_time: float) -> None:
         mat_trail = bpy.data.materials.get("TRAIL")
         curveObj.data.materials.clear()
         curveObj.data.materials.append(mat_trail)
-
-    # Switch viewport to material preview
-    for area in bpy.context.screen.areas:
-        if area.type == 'VIEW_3D':
-            for space in area.spaces:
-                if space.type == 'VIEW_3D':
-                    space.shading.type = 'MATERIAL'
 
     # OSM colour overlays
     _t0 = _time.perf_counter()
@@ -91,6 +85,16 @@ def finalize(ctx: GenerationContext, gen_type: int, start_time: float) -> None:
             write_metadata(plobj, type="PLATE")
             if export_path:
                 export_object(plobj, export_path)
+
+    # 3MF export (if ThreeMF_io addon is installed and auto-3MF is enabled)
+    tp = bpy.context.scene.tp3d
+    if getattr(tp, 'auto3mfExport', False):
+        export_dir = ctx.exportPath
+        if export_dir:
+            import os
+            filepath_3mf = os.path.join(export_dir, ctx.name + ".3mf")
+            parts = [p for p in [obj, curveObj, ctx.textobj, ctx.plateobj] if p]
+            export_as_3mf(parts, filepath_3mf, assembly_name=ctx.name)
 
     # Timing
     duration = time.time() - start_time

@@ -2,10 +2,12 @@
 
 import bpy  # type: ignore
 
+from ..export_3mf import is_3mf_available
+
 
 class MY_PT_Generate(bpy.types.Panel):
     bl_label = "Create"
-    bl_idname = "PT_EmGi_3DPath+"
+    bl_idname = "TP3D_PT_Generate"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = "TrailPrint3D"
@@ -21,7 +23,13 @@ class MY_PT_Generate(bpy.types.Panel):
         box = layout.box()
         box.prop(props, "file_path")
         box.prop(props, "export_path")
-        box.prop(props, "autoExport")
+
+        # Auto-export toggles on one row
+        row = box.row(align=True)
+        row.prop(props, "autoExport")
+        if is_3mf_available():
+            row.prop(props, "auto3mfExport")
+
         box.prop(props, "trailName")
         box.prop(props, "shape")
         box.separator()
@@ -44,5 +52,6 @@ class MY_PT_Generate(bpy.types.Panel):
             box.prop(props, "pathScale")
 
         box.prop(props, "overwritePathElevation")
+
         layout.label(text=props.o_time)
         layout.label(text="------------------------------")
