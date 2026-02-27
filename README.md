@@ -1,3 +1,6 @@
+>[!WARNING]
+>While I am in contact with the original author, the repository this fork is forked from is NOT the original work by the author of the addon found on makerworld. 
+
 # TrailPrint3D - 3D Printable Trail Maps
 
 [![Version](https://img.shields.io/badge/version-2.23-blue.svg)](https://github.com/xuqi2024/TrailPrint3D)
